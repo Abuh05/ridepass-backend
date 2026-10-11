@@ -50,6 +50,8 @@ export function publicRoutes(r: Router): void {
   r.get('/agent', page('agent.html'));
   r.get('/dashboard', page('dashboard.html'));
   r.get('/verify', page('verify.html'));
+  r.get('/admin', page('admin.html'));
+  r.get('/guide', page('guide.html'));
   r.get('/share/:code', page('share.html'));
   r.get('/a/:token', page('attest.html'));
 

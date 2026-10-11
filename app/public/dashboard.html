@@ -12,6 +12,7 @@
 <header class="topbar"><div class="inner">
   <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Lessor &amp; lender dashboard</small></span></a>
   <span class="spacer"></span>
+  <a class="btn ghost" href="/guide#lessor">Guide</a>
   <div class="who hidden" id="who"></div>
   <button class="ghost hidden" id="logout" title="Sign out"></button>
 </div></header>
@@ -47,7 +48,7 @@
         <span><span class="cal"><i class="short_unconfirmed"></i></span>Short</span>
         <span><span class="cal"><i class="missed"></i></span>Nothing logged</span>
       </div>
-      <div class="table-wrap"><table id="portfolio"></table></div>
+      <div class="table-wrap"><table id="portfolio" class="rtable"></table></div>
     </section>
 
     <div class="cols two" style="margin-bottom:16px">
@@ -81,7 +82,7 @@
         <span class="spacer"></span>
         <div class="seg" id="gfilter"><button class="on" data-f="all">All</button><button data-f="granted">Granted</button><button data-f="pending">Pending</button></div>
       </div>
-      <div class="table-wrap"><table id="grants"></table></div>
+      <div class="table-wrap"><table id="grants" class="rtable"></table></div>
     </section>
 
     <section class="card" id="ownerCard">
@@ -149,10 +150,10 @@ const kpi = (label, value, sub, alert) => `<div class="kpi${alert ? ' alert' : '
 function renderGrants() {
   const rows = grants.filter((g) => gFilter === 'all' || g.status === gFilter);
   $('grants').innerHTML = '<thead><tr><th>Rider</th><th>Access</th><th>Status</th><th>Requested</th><th></th></tr></thead><tbody>' +
-    (rows.length ? rows.map((g) => `<tr><td>${riderCell(g.rider)}</td>
-      <td>${g.scope === 'portfolio' ? 'Repayment tracking' + (g.daily_due ? ` <span class="muted">· ${N(g.daily_due)}/day</span>` : '') : 'Credit passport'}</td>
-      <td>${statusPill(g.status)}</td><td class="nowrap">${E(g.created_at.slice(0, 10))}</td>
-      <td class="num">${g.status === 'granted' && g.rider ? `<button class="secondary sm" data-g="${E(g.grant_id)}">View passport</button>` : ''}</td></tr>`).join('')
+    (rows.length ? rows.map((g) => `<tr><td data-label="" class="full">${riderCell(g.rider)}</td>
+      <td data-label="Access">${g.scope === 'portfolio' ? 'Repayment tracking' + (g.daily_due ? ` <span class="muted">· ${N(g.daily_due)}/day</span>` : '') : 'Credit passport'}</td>
+      <td data-label="Status">${statusPill(g.status)}</td><td data-label="Requested" class="nowrap">${E(g.created_at.slice(0, 10))}</td>
+      <td data-label="" class="num">${g.status === 'granted' && g.rider ? `<button class="secondary sm" data-g="${E(g.grant_id)}">View passport</button>` : ''}</td></tr>`).join('')
     : `<tr><td colspan="5"><div class="empty">${gFilter === 'all' ? 'No requests yet. Ask a rider for access above.' : 'Nothing ' + gFilter + '.'}</div></td></tr>`) + '</tbody>';
   $('grants').querySelectorAll('button[data-g]').forEach((b) => (b.onclick = () => openPassport({ grant: b.dataset.g })));
 }
@@ -180,11 +181,11 @@ async function load() {
     kpi(`On-time rate · ${p.days}d`, dueDays ? Math.round((paidDays / dueDays) * 100) + '%' : '—', 'days paid in full') +
     kpi('Estimated arrears', N(arrears), alerts ? `${alerts} rider${alerts > 1 ? 's' : ''} need attention` : 'no active alerts', alerts > 0);
   $('portfolio').innerHTML = `<thead><tr><th>Rider</th><th class="num">Daily due</th><th>Last ${p.days} days</th><th class="num">Missed</th><th class="num">Arrears (est.)</th><th>Score</th><th>Alert</th></tr></thead><tbody>` +
-    (p.riders.length ? p.riders.map((r) => `<tr data-g="${E(r.grant_id)}"><td>${riderCell(r.rider)}</td><td class="num">${N(r.daily_due)}</td>
-      <td><span class="cal">${r.calendar.map((c) => `<i class="${E(c.status)}" title="${E(c.day)}: ${E(c.status.replace(/_/g, ' '))} ${N(c.repaid)}"></i>`).join('')}</span></td>
-      <td class="num">${r.missed_days}</td><td class="num">${N(r.estimated_arrears)}</td>
-      <td class="nowrap">${r.score != null ? `<b>${r.score}</b> <span class="pill ${'AB'.includes(r.band) ? 'ok' : r.band === 'C' ? 'warn' : 'bad'}">${E(r.band)}</span>` : '<span class="pill">Building</span>'}</td>
-      <td>${r.alert ? `<span class="pill bad"><span class="dot"></span>${E(r.alert)}</span>` : '<span class="muted">—</span>'}</td></tr>`).join('')
+    (p.riders.length ? p.riders.map((r) => `<tr data-g="${E(r.grant_id)}"><td data-label="" class="full">${riderCell(r.rider)}</td><td data-label="Daily due" class="num">${N(r.daily_due)}</td>
+      <td data-label="Last ${p.days} days"><span class="cal">${r.calendar.map((c) => `<i class="${E(c.status)}" title="${E(c.day)}: ${E(c.status.replace(/_/g, ' '))} ${N(c.repaid)}"></i>`).join('')}</span></td>
+      <td data-label="Missed" class="num">${r.missed_days}</td><td data-label="Arrears (est.)" class="num">${N(r.estimated_arrears)}</td>
+      <td data-label="Score" class="nowrap">${r.score != null ? `<b>${r.score}</b> <span class="pill ${'AB'.includes(r.band) ? 'ok' : r.band === 'C' ? 'warn' : 'bad'}">${E(r.band)}</span>` : '<span class="pill">Building</span>'}</td>
+      <td data-label="Alert">${r.alert ? `<span class="pill bad"><span class="dot"></span>${E(r.alert)}</span>` : '<span class="muted">—</span>'}</td></tr>`).join('')
     : '<tr><td colspan="7"><div class="empty">No riders yet. Send a “Daily repayment tracking” request below.</div></td></tr>') + '</tbody>';
   $('portfolio').querySelectorAll('tr[data-g]').forEach((tr) => (tr.onclick = () => openPassport({ grant: tr.dataset.g })));
 }

@@ -3,45 +3,149 @@
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RidePass — Voice-first credit passport</title>
 <meta name="description" content="Keke, okada and bus riders build a verified, signed repayment history by voice in English, Pidgin, Hausa, Yorùbá or Igbo.">
-<meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"></head>
-<body>
+<meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/landing.css"></head>
+<body class="lp">
 <header class="topbar"><div class="inner">
   <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Voice-first credit passport</small></span></a>
+  <nav class="navlinks" aria-label="Main">
+    <a href="#how">How it works</a><a href="#passport">Passport</a><a href="#ev">EV savings</a><a href="#roles">Who it’s for</a><a href="/guide">Guide</a>
+  </nav>
   <span class="spacer"></span>
-  <a class="btn secondary" href="/verify">Verify a passport</a>
+  <div class="navcta"><a class="btn secondary" href="/rider">Rider login</a><a class="btn" href="/dashboard">Dashboard</a></div>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 </div></header>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile">
+  <a href="#how">How it works</a><a href="#passport">Passport</a><a href="#ev">EV savings</a><a href="#roles">Who it’s for</a><a href="/guide">Getting-started guide</a>
+  <a class="btn" href="/rider">Rider login</a><a class="btn secondary" href="/dashboard">Lessor &amp; lender dashboard</a>
+</nav>
+
 <main>
-  <section class="hero">
-    <span class="eyebrow">Built on N-ATLAS · NAIC 2026</span>
-    <h1>Talk your money. Build your credit.</h1>
-    <p>Keke, okada and bus riders send a daily voice note. RidePass turns it into a verified, signed repayment history that lessors and lenders can trust — and shows how much a switch to electric would save.</p>
-    <div class="langs"><span>English</span><span>Pidgin</span><span>Hausa</span><span>Yorùbá</span><span>Igbo</span></div>
-    <svg class="wave" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg>
+  <!-- HERO -->
+  <section class="hero2">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="live-pill"><span class="live-dot"></span>Live on N-ATLAS · NAIC 2026</span>
+        <h1>Talk your money.<br><span class="grad">Build your credit.</span></h1>
+        <p class="lead">Keke, okada and bus riders send one voice note a day in their own language. RidePass turns it into an owner-confirmed, cryptographically signed repayment history that lessors and lenders can trust.</p>
+        <div class="hero-ctas">
+          <a class="btn" href="/rider">Start as a rider</a>
+          <a class="btn secondary" href="/dashboard">Lessor &amp; lender dashboard</a>
+        </div>
+        <div class="facts">
+          <div class="fact"><b data-count="5">5</b><span>Nigerian languages</span></div>
+          <div class="fact"><b>~<i data-count="5" style="font-style:normal">5</i>s</b><span>voice note to ledger</span></div>
+          <div class="fact"><b data-count="14">14</b><span>days to a credit passport</span></div>
+          <div class="fact"><b data-count="0">0</b><span>records shared without consent</span></div>
+        </div>
+      </div>
+      <div class="demo">
+        <div class="lang-tabs" id="langTabs" role="tablist" aria-label="Demo language"></div>
+        <div class="phone" aria-label="Animated demo of a rider logging money by voice">
+          <div class="screen">
+            <div class="screen-top"><span class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><div><b>RidePass</b><small id="demoStatus">online</small></div></div>
+            <div class="thread" id="thread" aria-live="off"></div>
+          </div>
+        </div>
+        <p class="demo-note">Real messages from the app. Tap a language to replay.</p>
+      </div>
+    </div>
   </section>
 
-  <div class="section-title">Choose your workspace</div>
-  <div class="tiles" id="tiles"></div>
+  <section class="strip">
+    <div class="wrap" id="strip"></div>
+  </section>
 
-  <div class="section-title">How it works</div>
-  <div class="steps">
-    <div class="step"><h3>Speak</h3><p>“I made 14 thousand today, fuel 5,200, I paid owner 3,000” — in any of five languages.</p></div>
-    <div class="step"><h3>Confirm</h3><p>RidePass reads it back. Nothing is saved until the rider says it’s correct, and the owner confirms every payment.</p></div>
-    <div class="step"><h3>Share</h3><p>After 14 active days the rider gets an Ed25519-signed passport with an explainable, behaviour-only score.</p></div>
-  </div>
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="wrap">
+      <div class="center reveal"><span class="kicker">How it works</span><h2 class="title">From a voice note to a bankable record</h2><p class="lead">No forms, no typing, no smartphone skills needed. Every step is checked by a person before it counts.</p></div>
+      <div class="how">
+        <div class="steps2 reveal" id="steps"></div>
+        <div class="stage reveal d2" id="stage"></div>
+      </div>
+    </div>
+  </section>
 
-  <footer class="footer">
-    <span>Phoenix Renewable Group</span><span>National AI Innovation Challenge 2026</span><span>Speech: NCAIR1 N-ATLAS ASR</span><span>Language: NCAIR1/N-ATLaS</span>
-  </footer>
+  <!-- PASSPORT -->
+  <section id="passport" style="background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+    <div class="wrap pp-grid">
+      <div class="pp-card reveal" id="ppCard">
+        <span class="pill warn sample">Sample</span>
+        <div class="pp-top">
+          <div class="gauge"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="10"/><circle class="arc" cx="60" cy="60" r="52" fill="none" stroke="var(--ok)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 327"/></svg>
+            <div class="center"><div class="val" id="ppScore">0</div><div class="lbl">BAND A</div></div></div>
+          <div><div class="muted small" style="text-transform:uppercase;letter-spacing:.06em;font-weight:600">RidePass credit passport</div><h3 style="font-size:20px;margin:4px 0 8px">Musa · Keke</h3>
+            <span class="pill brand">Hire purchase</span> <span class="pill ok"><span class="dot"></span>Signature verified</span></div>
+        </div>
+        <div class="bars" id="ppBars"></div>
+      </div>
+      <div class="reveal d1">
+        <span class="kicker">The credit passport</span>
+        <h2 class="title">An explainable score lenders can verify themselves</h2>
+        <p class="lead">After 14 active days, every rider gets a passport they control. They share it by code or approve a request, and it can be revoked at any time.</p>
+        <ul class="checklist" id="ppChecks"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EV -->
+  <section id="ev">
+    <div class="wrap">
+      <div class="center reveal"><span class="kicker">Phoenix EV switch</span><h2 class="title">What would electric save you?</h2><p class="lead">Riders get this estimate from their own logged fuel spend (send <b>EV</b>). Try it with your numbers.</p></div>
+      <div class="ev reveal">
+        <div class="ev-in">
+          <span class="label" style="margin-top:0">Vehicle</span>
+          <div class="seg" id="evVeh" role="radiogroup" aria-label="Vehicle"><button class="on" data-v="keke">Keke</button><button data-v="okada">Okada</button><button data-v="bus">Bus</button></div>
+          <label for="evFuel" style="margin-top:22px">Fuel spend per working day</label>
+          <div class="range-val" id="evFuelVal">₦5,000</div>
+          <input type="range" id="evFuel" min="1000" max="25000" step="500" value="5000" aria-describedby="evFuelVal">
+          <div class="range-scale"><span>₦1,000</span><span>₦25,000</span></div>
+          <p class="hint" style="margin-top:16px">Illustrative defaults: petrol ₦1,000/L, electricity ₦209/kWh, 26 working days a month. RidePass uses the rider’s real logs.</p>
+        </div>
+        <div class="ev-out" aria-live="polite">
+          <div><div class="lbl">Estimated saving</div><div class="big-save" id="evSave">₦0</div><div class="lbl">per month</div></div>
+          <div class="mini-grid">
+            <div><b id="evKm">0 km</b><span>driven per day</span></div>
+            <div><b id="evElec">₦0</b><span>charging per day</span></div>
+            <div><b id="evConv">₦0</b><span>conversion cost</span></div>
+            <div><b id="evPay">—</b><span>to pay back</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section id="roles" style="background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+    <div class="wrap">
+      <div class="center reveal"><span class="kicker">Who it’s for</span><h2 class="title">One record, everyone who needs to trust it</h2></div>
+      <div class="roles" id="roleCards"></div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section>
+    <div class="wrap">
+      <div class="center reveal"><span class="kicker">Built to be trusted</span><h2 class="title">Privacy and integrity by design</h2></div>
+      <div class="trust reveal" id="trust"></div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="cta-band reveal">
+        <h2>Ready to onboard your first riders?</h2>
+        <p>Follow the step-by-step guide for admins, field agents, riders, owners, lessors and lenders. Most teams are live in an afternoon.</p>
+        <div class="hero-ctas" style="justify-content:center;margin:0"><a class="btn" href="/guide">Open the getting-started guide</a><a class="btn secondary" href="/verify">Verify a passport</a></div>
+      </div>
+    </div>
+  </section>
 </main>
+
+<footer class="footer">
+  <span>© Phoenix Renewable Group</span><span>National AI Innovation Challenge 2026</span><span>Speech: NCAIR1 N-ATLAS ASR</span><span>Language: NCAIR1/N-ATLaS</span><a href="/guide">Guide</a><a href="/admin">Admin</a>
+</footer>
 <script src="/common.js"></script>
-<script>
-const tiles = [
-  ['/rider', 'mic', '', 'Rider web app', 'Log your day by voice and get your passport. Phone + PIN.'],
-  ['/agent', 'users', 'amber', 'Field agent', 'Onboard and record for riders without WhatsApp.'],
-  ['/dashboard', 'chart', 'blue', 'Lessors & lenders', 'Repayment portfolio, passports and share codes.'],
-  ['/verify', 'shield', '', 'Verify a passport', 'Check the signature, expiry and ledger integrity.'],
-];
-document.getElementById('tiles').innerHTML = tiles.map(([href, ic, tone, title, desc]) =>
-  `<a class="tile" href="${href}"><span class="icon-chip ${tone}">${RP.icon(ic)}</span><b>${title}</b><span class="muted">${desc}</span><span class="go">Open ${RP.icon('arrow').replace('<svg', '<svg width="15" height="15"')}</span></a>`).join('');
-</script>
+<script src="/landing.js"></script>
 </body></html>

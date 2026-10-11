@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RidePass — Getting-started guide</title>
+<meta name="description" content="Step-by-step onboarding for RidePass admins, field agents, riders, vehicle owners, lessors and lenders.">
+<meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
+<style>
+  .g-layout { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; }
+  .g-layout > div, ol.steps-list > li { min-width: 0; }
+  .g-sec { overflow-wrap: anywhere; }
+  .toc { position: sticky; top: 80px; display: grid; gap: 2px; }
+  .toc a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; color: var(--ink-2); font-size: 14.5px; font-weight: 550; }
+  .toc a:hover { background: var(--bg-soft); text-decoration: none; }
+  .toc a.on { background: var(--brand-50); color: var(--brand); }
+  .toc .n { width: 22px; height: 22px; border-radius: 6px; background: var(--bg-soft); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--muted); flex: 0 0 22px; }
+  .toc a.on .n { background: var(--brand); color: var(--brand-ink); }
+  .g-sec { scroll-margin-top: 80px; }
+  .g-sec + .g-sec { margin-top: 18px; }
+  .g-sec > .card { margin: 0; }
+  .g-sec h2 { font-size: 21px; letter-spacing: -.015em; }
+  .g-sec h3 { font-size: 15.5px; margin: 22px 0 8px; }
+  .g-sec p, .g-sec li { font-size: 15px; color: var(--ink-2); }
+  .who-tag { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 650; color: var(--muted); margin-bottom: 4px; }
+  ol.steps-list { counter-reset: s; list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 10px; }
+  ol.steps-list > li { counter-increment: s; position: relative; padding: 12px 14px 12px 52px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; }
+  ol.steps-list > li::before { content: counter(s); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: var(--brand-ink); font-weight: 700; font-size: 13px; display: grid; place-items: center; }
+  ol.steps-list > li b { color: var(--ink); }
+  ul.tight { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 4px; }
+  .kbd { font-family: var(--mono); font-size: 13px; background: var(--bg-soft); border: 1px solid var(--line-strong); border-bottom-width: 2px; padding: 1px 7px; border-radius: 6px; color: var(--ink); white-space: nowrap; }
+  pre { background: #0f1b16; color: #d7f5e5; padding: 14px 16px; border-radius: 12px; overflow-x: auto; font-size: 13px; line-height: 1.55; margin: 10px 0; }
+  .callout { display: flex; gap: 12px; padding: 13px 15px; border-radius: 12px; margin: 14px 0 0; font-size: 14.5px; }
+  .callout .ci { display: flex; flex: 0 0 20px; margin-top: 1px; }
+  .callout svg { width: 20px; height: 20px; }
+  .callout.tip { background: var(--brand-50); color: var(--ink-2); } .callout.tip svg { color: var(--brand); }
+  .callout.warn { background: var(--warn-bg); color: var(--warn-ink); }
+  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+  .timeline div { background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .timeline b { display: block; color: var(--brand); font-size: 13px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .timeline span { font-size: 14px; color: var(--ink-2); }
+  .cmds { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 10px; }
+  .cmds div { padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); font-size: 14px; }
+  .cmds .kbd { margin-right: 6px; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 8px; font-size: 14px; }
+  .legend-row span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend-row i { width: 12px; height: 18px; border-radius: 3px; display: inline-block; }
+  .chipnav { display: none; }
+  @media (max-width: 900px) {
+    .g-layout { grid-template-columns: 1fr; }
+    .toc { display: none; }
+    .chipnav { display: flex; gap: 6px; overflow-x: auto; position: sticky; top: 61px; z-index: 10; background: var(--bg); padding: 10px 0; margin: -6px 0 10px; scrollbar-width: none; }
+    .chipnav::-webkit-scrollbar { display: none; }
+    .chipnav a { flex: 0 0 auto; padding: 7px 13px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+    .chipnav a.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+    .timeline { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) { .timeline { grid-template-columns: 1fr; } ol.steps-list > li { padding-left: 46px; } }
+  @media print { .toc, .chipnav, .page-head .actions { display: none !important; } .g-layout { display: block; } .g-sec { break-inside: avoid-page; } pre { white-space: pre-wrap; } }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Getting-started guide</small></span></a>
+  <span class="spacer"></span>
+  <button class="secondary sm hide-sm" onclick="print()">Print / save PDF</button>
+</div></header>
+<main>
+  <div class="page-head">
+    <div><h1>Getting started with RidePass</h1><p>Who does what, in what order. Jump to your role.</p></div>
+  </div>
+  <nav class="chipnav" id="chipnav" aria-label="Sections"></nav>
+  <div class="g-layout">
+    <nav class="toc" id="toc" aria-label="Sections"></nav>
+    <div>
+
+<section class="g-sec" id="start" data-title="Launch plan"><div class="card">
+  <div class="who-tag">EVERYONE · READ FIRST</div>
+  <h2>Launch plan</h2>
+  <p>RidePass connects six kinds of people. The order matters: organisations first, then owners, then riders.</p>
+  <div class="timeline">
+    <div><b>Day 0 · Set up</b><span>Admin starts the GPU, checks status, creates keys for each agent, lessor and lender.</span></div>
+    <div><b>Day 1 · First park</b><span>Agents onboard 10–20 riders at one park and record each rider’s first voice note with them.</span></div>
+    <div><b>Days 1–14 · Daily logs</b><span>Riders log every evening; owners confirm payments; lessors watch the portfolio.</span></div>
+    <div><b>Day 14+ · Passports</b><span>Riders with 14 active days get a scored passport and can share it with lenders.</span></div>
+  </div>
+  <h3>Where everyone goes</h3>
+  <div class="table-wrap"><table class="rtable">
+    <thead><tr><th>Who</th><th>Page</th><th>Signs in with</th></tr></thead>
+    <tbody>
+      <tr><td data-label="" class="full"><b>Programme admin</b></td><td data-label="Page"><a href="/admin">/admin</a></td><td data-label="Signs in with">Admin key (secrets file)</td></tr>
+      <tr><td data-label="" class="full"><b>Field agent</b></td><td data-label="Page"><a href="/agent">/agent</a></td><td data-label="Signs in with">Agent API key</td></tr>
+      <tr><td data-label="" class="full"><b>Rider</b></td><td data-label="Page"><a href="/rider">/rider</a> or WhatsApp</td><td data-label="Signs in with">Phone number + PIN</td></tr>
+      <tr><td data-label="" class="full"><b>Vehicle owner</b></td><td data-label="Page">A link they receive</td><td data-label="Signs in with">Nothing needed</td></tr>
+      <tr><td data-label="" class="full"><b>Lessor / lender</b></td><td data-label="Page"><a href="/dashboard">/dashboard</a></td><td data-label="Signs in with">Organisation API key</td></tr>
+      <tr><td data-label="" class="full"><b>Anyone verifying</b></td><td data-label="Page"><a href="/verify">/verify</a></td><td data-label="Signs in with">Nothing needed</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section class="g-sec" id="admin" data-title="Programme admin"><div class="card">
+  <div class="who-tag">PHOENIX PROGRAMME TEAM</div>
+  <h2>Programme admin: onboard the organisations</h2>
+  <ol class="steps-list">
+    <li><b>Start the GPU</b> before riders log (see <a href="#gpu">Starting the GPU</a>). Then open <a href="/admin">/admin</a>, sign in with <code>ADMIN_API_KEY</code> from <code>ridepass-secrets.env</code>, and check <b>System status</b>: model mode “N-ATLAS (live)”, both models “Reachable”, all four languages loaded.</li>
+    <li><b>Create one key per field agent</b> under “Onboard an organisation” → Type: Field-agent team, name it after the person (e.g. “Agent – Aisha, Kano park”). Separate keys mean every recording is traceable to the agent who made it.</li>
+    <li><b>Create one key per lessor and per lender.</b> Use the company’s legal name so riders recognise it when they are asked for permission.</li>
+    <li><b>Hand over keys privately</b>: in person or a direct call, never in a group chat. A key is shown once; if it is lost, create a new one.</li>
+    <li><b>Collect every vehicle owner’s phone number</b> from the lessors. Lessors register their own collection phone in their dashboard; agents verify independent owners in person.</li>
+  </ol>
+  <h3>Every day</h3>
+  <ul class="tight">
+    <li>Keep the GPU on during logging hours (17:00–23:00 WAT works well); check <b>System status</b> once it is up.</li>
+    <li>Reminders go out automatically at 19:00 Lagos time to riders who haven’t logged. “Send evening reminders now” forces them.</li>
+    <li>Watch <b>First-pass accuracy</b> and corrections by language. A language with many corrections needs a closer look.</li>
+  </ul>
+  <h3>Every week</h3>
+  <ul class="tight">
+    <li>Download the interactions CSV from <a href="/admin">/admin</a> → Tools. This is your NAIC validation evidence.</li>
+    <li>Keep active riders under the N-ATLAS licence cap of <b>1,000</b>. The console warns at 900.</li>
+  </ul>
+  <div class="callout warn"><span class="ci" data-icon="alert"></span><span><b>Back up <code>ridepass-secrets.env</code>.</b> Without <code>DATA_KEY</code>, riders’ encrypted names and phone numbers can’t be recovered.</span></div>
+</div></section>
+
+<section class="g-sec" id="agent" data-title="Field agent"><div class="card">
+  <div class="who-tag">AT THE PARK</div>
+  <h2>Field agent: onboard a rider (about 5 minutes)</h2>
+  <ol class="steps-list">
+    <li><b>Sign in</b> at <a href="/agent">/agent</a> with your agent key.</li>
+    <li><b>Enter the rider’s phone number</b> and a <b>PIN the rider chooses</b> (4–6 digits). Ask them to remember it; it is how they log in on the web. Tap <b>Open rider</b>.</li>
+    <li><b>Language:</b> ask which language they prefer and tap it.</li>
+    <li><b>Consent:</b> read the message aloud in their language. <b>Tap the rider’s own answer. Never answer for them.</b> If they say no, nothing is stored.</li>
+    <li><b>Profile:</b> type their first name, then tap vehicle (Keke / Okada / Bus) and who owns it (Own / Hire purchase / Daily rent).</li>
+    <li><b>Owner’s phone:</b> type the owner’s number so payments can be confirmed (send <span class="kbd">0</span> if they have no owner). <b>Daily payment:</b> type how much they pay the owner each day.</li>
+    <li><b>Research question:</b> explain it simply. Keeping voice notes is optional and their name is never attached. Tap their answer.</li>
+    <li><b>First voice note together:</b> hand them the phone, hold the mic button while they speak today’s money, release, and check the read-back with them before tapping “Correct”.</li>
+  </ol>
+  <h3>Tell every rider before they leave</h3>
+  <ul class="tight">
+    <li>“Every evening, record one voice note: what you made, fuel, and what you paid the owner.”</li>
+    <li>“Log in at <b>credit-passport-tau.vercel.app/rider</b> with your phone number and PIN.” (Once WhatsApp is live, they just message the RidePass number.)</li>
+    <li>“If your owner gets a link, ask them to tap Yes. Confirmed payments make your passport stronger.”</li>
+    <li>“After 14 days of logging, send <span class="kbd">PASSPORT</span> to get your score and a share code.”</li>
+  </ul>
+  <h3>Verify an owner in person</h3>
+  <p>Open <b>Verify an owner in person</b> under the rider form, enter the owner’s phone, and tap <b>Mark owner verified</b>, but only after you have seen their ID and proof they own the vehicle. Verified owners’ confirmations count in full.</p>
+  <div class="callout tip"><span class="ci" data-icon="mic"></span><span><b>Good recordings:</b> a quiet spot, phone 10–20 cm from the mouth, 3–10 seconds, amounts said clearly. Watch the green level bar move while they speak. If it stays flat, the microphone isn’t working.</span></div>
+</div></section>
+
+<section class="g-sec" id="rider" data-title="Rider"><div class="card">
+  <div class="who-tag">READ THIS TO THE RIDER IF NEEDED</div>
+  <h2>Rider: your daily routine</h2>
+  <ol class="steps-list">
+    <li><b>Open</b> <a href="/rider">credit-passport-tau.vercel.app/rider</a> and log in with your phone number and PIN.</li>
+    <li><b>Hold the green microphone</b> and say: “I made 14 thousand today, fuel 5,200, I paid owner 3,000.” Use your own language. Let go when you finish.</li>
+    <li><b>Check what RidePass heard.</b> If the amounts are right, tap <b>Correct</b>. If not, tap <b>Not correct</b> and say it again. Nothing is saved until you tap Correct.</li>
+    <li><b>If you see a link for your owner</b>, send it to them (WhatsApp or SMS) so they can confirm your payment.</li>
+  </ol>
+  <h3>Words you can send</h3>
+  <div class="cmds">
+    <div><span class="kbd">SUMMARY</span>your last 7 days</div>
+    <div><span class="kbd">PASSPORT</span>score and share code (after 14 days)</div>
+    <div><span class="kbd">EV</span>how much electric would save you</div>
+    <div><span class="kbd">STOP SHARING</span>remove every lender’s access</div>
+    <div><span class="kbd">MY DATA</span>download all your records</div>
+    <div><span class="kbd">DELETE MY DATA</span>erase everything</div>
+    <div><span class="kbd">LANGUAGE</span>change language</div>
+    <div><span class="kbd">STOP</span>no more evening reminders</div>
+  </div>
+  <p style="margin-top:14px">When a lessor or lender asks to see your records, RidePass asks you first. Tap <b>Allow</b> or <b>Refuse</b>. You can stop sharing any time.</p>
+</div></section>
+
+<section class="g-sec" id="owner" data-title="Vehicle owner"><div class="card">
+  <div class="who-tag">NO ACCOUNT NEEDED</div>
+  <h2>Vehicle owner: confirm payments in one tap</h2>
+  <ol class="steps-list">
+    <li>When your rider logs a payment to you, you receive a <b>link</b> (forwarded by the rider, or by WhatsApp once it is live).</li>
+    <li>Open it. It says, in the rider’s language, “<i>Musa says they paid you ₦3,000 on 2026-10-11. Is this correct?</i>”</li>
+    <li>Tap <b>Yes, correct</b> or <b>Not correct</b>. That’s all. A “Not correct” answer is shown to the rider and doesn’t count.</li>
+  </ol>
+  <div class="callout tip"><span class="ci" data-icon="shield"></span><span>Owners who are leasing companies should register their collection phone in the dashboard (see <a href="#lessor">Lessor</a>). Independent owners can be verified in person by a field agent.</span></div>
+</div></section>
+
+<section class="g-sec" id="lessor" data-title="Lessor"><div class="card">
+  <div class="who-tag">LEASING FIRMS & FLEET OWNERS</div>
+  <h2>Lessor: track daily repayments</h2>
+  <ol class="steps-list">
+    <li><b>Sign in</b> at <a href="/dashboard">/dashboard</a> with the key from the RidePass admin.</li>
+    <li><b>Register your collection phone</b> (bottom of the dashboard). Payments your riders report are confirmed from this number, and it counts as a <b>verified owner</b>.</li>
+    <li><b>Ask each rider for access:</b> enter their phone, choose <b>Daily repayment tracking</b>, enter the daily amount due, and tap <b>Send request</b>. The rider must already be onboarded.</li>
+    <li><b>The rider approves</b> in their own chat. Tap <b>Refresh</b> and they appear in your portfolio.</li>
+  </ol>
+  <h3>Reading the portfolio</h3>
+  <div class="legend-row">
+    <span><i style="background:var(--ok)"></i>Paid, confirmed by owner</span>
+    <span><i style="background:color-mix(in srgb,var(--ok) 40%,var(--surface))"></i>Paid, self-reported</span>
+    <span><i style="background:var(--accent)"></i>Paid short (under 90% of due)</span>
+    <span><i style="background:var(--bad)"></i>Nothing logged</span>
+  </div>
+  <ul class="tight" style="margin-top:12px">
+    <li><b>Alert</b> appears after 2 days in a row without a payment. Call the rider early.</li>
+    <li><b>Arrears (est.)</b> is the daily due minus what was reported, since the rider joined.</li>
+    <li><b>Click a rider</b> to open their passport and run an affordability check for a new deal.</li>
+  </ul>
+</div></section>
+
+<section class="g-sec" id="lender" data-title="Lender"><div class="card">
+  <div class="who-tag">MFBs, FINTECHS & COOPERATIVES</div>
+  <h2>Lender: assess a rider</h2>
+  <ol class="steps-list">
+    <li><b>Get a share code</b> from the rider: they send <span class="kbd">PASSPORT</span> after 14 active days and read you the 8-character code. Or use <b>Ask a rider for access → Credit passport (30 days)</b>.</li>
+    <li><b>Redeem the code</b> in <a href="/dashboard">/dashboard</a>. The passport opens with a green “Signature &amp; ledger verified” banner.</li>
+    <li><b>Run an affordability check:</b> enter the proposed daily repayment. Tick “Replaces the rider’s current owner payment” if your loan replaces their hire-purchase. You get <i>affordable</i>, <i>stretch</i> or <i>too high</i>, plus the maximum recommended per day.</li>
+    <li><b>Verify independently</b> any time at <a href="/verify">/verify</a> using the passport JSON and the public key.</li>
+  </ol>
+  <div class="callout warn"><span class="ci" data-icon="alert"></span><span>The score is behaviour-only and explainable. Use it with your own credit policy, not as the only basis for a decision. Every view you make is logged and visible to the rider.</span></div>
+</div></section>
+
+<section class="g-sec" id="gpu" data-title="Starting the GPU"><div class="card">
+  <div class="who-tag">ADMIN · DAILY</div>
+  <h2>Starting the GPU (RunPod)</h2>
+  <p>Voice notes need the GPU. Text messages, dashboards and passports work without it. Voice notes sent while it is off wait in the queue for up to about 6 hours.</p>
+  <ol class="steps-list">
+    <li>In RunPod → <b>Pods</b>, start the pod. Stopping and starting keeps the same pod ID, so nothing changes on Railway.</li>
+    <li>Open <b>Connect → Jupyter Notebook → Terminal</b> and paste (fill in the three values; never share them):
+<pre>cd /workspace &amp;&amp; rm -rf ridepass
+export HF_TOKEN=&lt;Hugging Face token&gt;
+export MODEL_SERVICE_TOKEN=&lt;from ridepass-secrets.env&gt;
+git clone https://&lt;GitHub token&gt;@github.com/Abuh05/ridepass-backend.git ridepass
+cd ridepass/model-service
+apt-get update &amp;&amp; apt-get install -y ffmpeg
+pip install "vllm&gt;=0.6.6" -r requirements.txt
+nohup ./start.sh &gt; /workspace/models.log 2&gt;&amp;1 &amp;</pre></li>
+    <li>Wait 10–15 minutes, then check <a href="/admin">/admin</a> → System status shows both models <b>Reachable</b>.</li>
+    <li>When logging hours end, <b>Stop</b> the pod to stop paying for it.</li>
+  </ol>
+  <div class="callout tip"><span class="ci" data-icon="cpu"></span><span>If you <b>terminate</b> (delete) the pod, the new one has a different ID, and <code>ASR_URL</code> and <code>LLM_BASE_URL</code> on Railway must be updated.</span></div>
+</div></section>
+
+<section class="g-sec" id="help" data-title="Troubleshooting"><div class="card">
+  <div class="who-tag">WHEN SOMETHING GOES WRONG</div>
+  <h2>Troubleshooting</h2>
+  <div class="table-wrap"><table class="rtable">
+    <thead><tr><th>What you see</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr><td data-label="" class="full"><b>“We could not hear you”</b> / green bar stays flat</td><td data-label="Fix">Allow the microphone (lock icon in the address bar) and choose the right mic in browser settings. Check it isn’t muted.</td></tr>
+      <tr><td data-label="" class="full"><b>Stuck on “checking your voice note…”</b></td><td data-label="Fix">The GPU is probably off. Check /admin → System status and start the pod. The note will be processed when it’s back.</td></tr>
+      <tr><td data-label="" class="full"><b>Wrong amounts in the read-back</b></td><td data-label="Fix">Tap “Not correct” and record again more slowly in a quieter place, or type: <code>income 14000 fuel 5200 owner 3000</code>.</td></tr>
+      <tr><td data-label="" class="full"><b>“No RidePass rider with that number”</b></td><td data-label="Fix">The rider hasn’t been onboarded or didn’t consent. A field agent must onboard them first.</td></tr>
+      <tr><td data-label="" class="full"><b>Rider forgot their PIN</b></td><td data-label="Fix">A field agent opens the rider with a new PIN in “Set rider PIN”.</td></tr>
+      <tr><td data-label="" class="full"><b>“Building history” instead of a score</b></td><td data-label="Fix">Normal until the rider has 14 active days of logs.</td></tr>
+      <tr><td data-label="" class="full"><b>An organisation lost its key</b></td><td data-label="Fix">Create a new key in /admin and give it to them. Keys cannot be shown again.</td></tr>
+      <tr><td data-label="" class="full"><b>Share code “invalid or expired”</b></td><td data-label="Fix">Codes last 7 days. Ask the rider to send PASSPORT again for a fresh one.</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+    </div>
+  </div>
+</main>
+<script src="/common.js"></script>
+<script>
+// Fill the icons in the static guide text, then build the section navigation.
+document.querySelectorAll('[data-icon]').forEach((el) => (el.innerHTML = RP.icon(el.dataset.icon)));
+const secs = [...document.querySelectorAll('.g-sec')];
+const link = (s, i, chip) => `<a href="#${s.id}" data-id="${s.id}">${chip ? '' : `<span class="n">${i + 1}</span>`}${RP.esc(s.dataset.title)}</a>`;
+document.getElementById('toc').innerHTML = secs.map((s, i) => link(s, i)).join('');
+document.getElementById('chipnav').innerHTML = secs.map((s, i) => link(s, i, true)).join('');
+const mark = (id) => document.querySelectorAll('#toc a, #chipnav a').forEach((a) => {
+  const on = a.dataset.id === id; a.classList.toggle('on', on);
+  if (on && a.parentElement.id === 'chipnav') a.scrollIntoView({ block: 'nearest', inline: 'center' });
+});
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver((es) => { const v = es.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]; if (v) mark(v.target.id); }, { rootMargin: '-80px 0px -60% 0px' });
+  secs.forEach((s) => io.observe(s));
+}
+mark(location.hash.slice(1) || 'start');
+</script>
+</body></html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RidePass — Admin Console</title><meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
+<style>
+  .newkey { margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--warn-bg); color: var(--warn-ink); }
+  .newkey code { display: block; margin: 8px 0; padding: 10px 12px; background: var(--surface); color: var(--ink); border-radius: 8px; font-size: 13.5px; word-break: break-all; }
+  .status-list { display: grid; gap: 10px; }
+  .status-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); flex-wrap: wrap; }
+  .status-row b { font-weight: 600; }
+  .langs { display: flex; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Admin console</small></span></a>
+  <span class="spacer"></span>
+  <a class="btn ghost" href="/guide#admin">Guide</a>
+  <button class="ghost hidden" id="logout" title="Sign out"></button>
+</div></header>
+<main>
+  <div class="center-wrap" id="keyCard" style="min-height:calc(100vh - 120px)">
+    <section class="card">
+      <div class="card-head"><div class="icon-chip blue" data-icon="key"></div><div><h2>Admin sign in</h2><p class="muted">Use the <code>ADMIN_API_KEY</code> from your secrets file. It stays in this browser tab only.</p></div></div>
+      <form id="keyForm">
+        <label for="key">Admin key</label><input id="key" type="password" autocomplete="off" required>
+        <p class="error" id="kerr"></p>
+        <div class="actions"><button class="block lg" id="signin" type="submit">Sign in</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="page-head">
+      <div><h1>Programme overview</h1><p>Onboard organisations, watch the models and collect validation evidence.</p></div>
+      <span class="spacer"></span>
+      <button class="secondary" id="refresh"></button>
+    </div>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="cols two" style="margin-bottom:16px">
+      <section class="card">
+        <div class="card-head"><div class="icon-chip" data-icon="cpu"></div><div><h2>System status</h2><p class="muted">Live check of the N-ATLAS models on the GPU.</p></div></div>
+        <div class="status-list" id="status"><div class="skeleton"></div></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><div class="icon-chip amber" data-icon="users"></div><div><h2>Onboard an organisation</h2><p class="muted">Creates an API key for a lessor, lender or field-agent team.</p></div></div>
+        <form id="orgForm">
+          <div class="form-grid">
+            <div class="field"><label for="oname">Organisation name</label><input id="oname" placeholder="e.g. Kano Keke Leasing Ltd" required maxlength="80"></div>
+            <div class="field"><label for="okind">Type</label><select id="okind"><option value="lessor">Lessor (leasing firm / fleet owner)</option><option value="lender">Lender (MFB / fintech)</option><option value="agent">Field-agent team</option></select></div>
+          </div>
+          <div class="actions"><button id="create" type="submit">Create API key</button></div>
+          <div class="notice" id="oerr"></div>
+          <div class="newkey hidden" id="newkey">
+            <b>Copy this key now. It will not be shown again.</b>
+            <code id="newkeyVal"></code>
+            <div class="actions" style="margin-top:6px"><button class="sm" type="button" id="copyKey">Copy key</button><span class="small" id="newkeyHint"></span></div>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head"><div class="icon-chip blue" data-icon="inbox"></div><div><h2>Organisations</h2><p class="muted">Keys are stored hashed. Match a key to its organisation by the prefix.</p></div></div>
+      <div class="table-wrap"><table id="orgs" class="rtable"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><div class="icon-chip" data-icon="chart"></div><div><h2>Voice notes by language</h2><p class="muted">Real N-ATLAS traffic only. Mock-mode interactions are excluded.</p></div></div>
+      <div class="table-wrap"><table id="langs" class="rtable"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><div class="icon-chip amber" data-icon="wallet"></div><div><h2>Tools</h2><p class="muted">Daily operations.</p></div></div>
+      <div class="actions" style="margin-top:0">
+        <button class="secondary" id="reminders">Send evening reminders now</button>
+        <button class="secondary" id="csv">Download interactions CSV</button>
+      </div>
+      <div class="notice" id="toolMsg"></div>
+    </section>
+  </div>
+</main>
+<script src="/common.js"></script>
+<script>
+const $ = (id) => document.getElementById(id), E = RP.esc;
+let key = RP.store.get('rp_admin');
+const H = () => ({ 'x-admin-key': key });
+const LANG = { en: 'English', pcm: 'Pidgin', ha: 'Hausa', yo: 'Yorùbá', ig: 'Igbo' };
+document.querySelectorAll('[data-icon]').forEach((el) => (el.innerHTML = RP.icon(el.dataset.icon)));
+$('refresh').innerHTML = RP.icon('refresh') + 'Refresh';
+$('logout').innerHTML = RP.icon('logout') + '<span>Sign out</span>';
+const kpi = (label, value, sub, alert) => `<div class="kpi${alert ? ' alert' : ''}"><div class="k-label">${label}</div><div class="k-value">${value}</div>${sub ? `<div class="k-sub">${sub}</div>` : ''}</div>`;
+const ok = (b, t, f) => `<span class="pill ${b ? 'ok' : 'bad'}"><span class="dot"></span>${b ? t : f}</span>`;
+
+async function signin() {
+  key = $('key').value.trim() || key; $('kerr').textContent = '';
+  try {
+    await RP.api('/api/admin/metrics', { headers: H() });
+    RP.store.set('rp_admin', key);
+    $('keyCard').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden');
+    load();
+  } catch (e) { $('kerr').textContent = e.status === 401 ? 'That admin key is not valid.' : e.message; RP.store.set('rp_admin', null); }
+}
+async function load() {
+  const [m, orgs] = await Promise.all([RP.api('/api/admin/metrics', { headers: H() }), RP.api('/api/admin/orgs', { headers: H() })]);
+  const att = Object.fromEntries((m.attestations || []).map((a) => [a.status, a.n]));
+  $('kpis').innerHTML =
+    kpi('Active riders · 30 days', `${m.active_users_30d}<span class="muted" style="font-size:15px;font-weight:600"> / ${m.user_cap}</span>`, m.cap_warning ? 'Near the N-ATLAS licence cap' : `${m.riders} consented in total`, m.cap_warning) +
+    kpi('Voice notes', m.voice_notes ?? 0, `${m.interactions_in ?? 0} rider messages in total`) +
+    kpi('First-pass accuracy', m.first_pass_accuracy != null ? m.first_pass_accuracy + '%' : '—', 'read-backs confirmed without correction') +
+    kpi('Owner confirmations', att.confirmed ?? 0, `${att.disputed ?? 0} disputed · ${att.pending ?? 0} pending`);
+  $('orgs').innerHTML = '<thead><tr><th>Organisation</th><th>Type</th><th>Key prefix</th><th class="num">Active grants</th><th>Created</th></tr></thead><tbody>' +
+    (orgs.length ? orgs.map((o) => `<tr><td data-label="" class="full"><b>${E(o.name)}</b></td><td data-label="Type"><span class="pill ${o.kind === 'lessor' ? 'brand' : o.kind === 'lender' ? 'warn' : ''}">${E(o.kind)}</span></td>
+      <td data-label="Key prefix"><code>rp_${E(o.key_prefix)}_…</code></td><td data-label="Active grants" class="num">${o.active_grants}</td><td data-label="Created" class="nowrap">${E(o.created_at.slice(0, 10))}</td></tr>`).join('')
+    : '<tr><td colspan="5"><div class="empty">No organisations yet. Create the first one above.</div></td></tr>') + '</tbody>';
+  const rows = m.by_language || [];
+  $('langs').innerHTML = '<thead><tr><th>Language</th><th class="num">Voice notes</th><th class="num">Avg speech-to-text</th><th class="num">Avg N-ATLaS</th><th class="num">Confirmed</th><th class="num">Corrected</th></tr></thead><tbody>' +
+    (rows.length ? rows.map((r) => `<tr><td data-label="" class="full"><b>${E(LANG[r.lang] || r.lang || '—')}</b></td><td data-label="Voice notes" class="num">${r.n}</td>
+      <td data-label="Avg speech-to-text" class="num">${r.avg_asr_ms != null ? (r.avg_asr_ms / 1000).toFixed(1) + ' s' : '—'}</td><td data-label="Avg N-ATLaS" class="num">${r.avg_llm_ms != null ? (r.avg_llm_ms / 1000).toFixed(1) + ' s' : '—'}</td>
+      <td data-label="Confirmed" class="num">${r.confirmed ?? 0}</td><td data-label="Corrected" class="num">${r.corrected ?? 0}</td></tr>`).join('')
+    : '<tr><td colspan="6"><div class="empty">No voice notes yet.</div></td></tr>') + '</tbody>';
+  loadStatus(m);
+}
+async function loadStatus(m) {
+  $('status').innerHTML = '<div class="skeleton"></div>';
+  let h;
+  try { h = await RP.api('/api/admin/model-health', { headers: H() }); } catch (e) { h = { asr: false, llm: false, detail: { error: e.message } }; }
+  const loaded = Object.keys(h.detail?.asr?.loaded || {});
+  const q = Object.fromEntries((m.queue || []).filter((x) => x.kind === 'inbound').map((x) => [x.status, x.n]));
+  $('status').innerHTML = `
+    <div class="status-row"><b>Model mode</b>${m.model_mode === 'natlas' ? '<span class="pill ok"><span class="dot"></span>N-ATLAS (live)</span>' : '<span class="pill warn"><span class="dot"></span>Mock: UI only</span>'}</div>
+    <div class="status-row"><b>Speech-to-text (GPU)</b>${ok(h.asr, 'Reachable', 'Unreachable')}</div>
+    <div class="status-row"><b>N-ATLaS language model</b>${ok(h.llm, 'Reachable', 'Unreachable')}</div>
+    <div class="status-row"><b>Languages loaded</b><span class="langs">${loaded.length ? loaded.map((l) => `<span class="pill brand">${E(LANG[l] || l)}</span>`).join('') : '<span class="muted">none</span>'}</span></div>
+    <div class="status-row"><b>Message queue</b><span class="muted">${q.queued ?? 0} waiting · ${q.running ?? 0} running · ${q.failed ?? 0} failed</span></div>
+    ${!h.asr || !h.llm ? '<div class="notice warn">The GPU may be stopped. Voice notes wait in the queue (up to about 6 hours) and are processed when it comes back. See the guide: “Starting the GPU”.</div>' : ''}`;
+}
+$('keyForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('signin'), signin); };
+$('orgForm').onsubmit = (e) => {
+  e.preventDefault(); RP.note($('oerr'), ''); $('newkey').classList.add('hidden');
+  RP.busy($('create'), async () => {
+    try {
+      const kind = $('okind').value, name = $('oname').value.trim();
+      const o = await RP.api('/api/admin/orgs', { method: 'POST', headers: H(), body: { name, kind } });
+      $('newkeyVal').textContent = o.apiKey;
+      $('newkeyHint').textContent = kind === 'agent' ? `Give it to ${name}. They sign in at /agent.` : `Give it to ${name}. They sign in at /dashboard.`;
+      $('newkey').classList.remove('hidden'); $('oname').value = '';
+      load();
+    } catch (err) { RP.note($('oerr'), err.message, 'bad'); }
+  });
+};
+$('copyKey').onclick = async () => { try { await navigator.clipboard.writeText($('newkeyVal').textContent); RP.toast('Key copied'); } catch { RP.toast('Select the key and copy it manually'); } };
+$('reminders').onclick = () => RP.busy($('reminders'), async () => {
+  try { const r = await RP.api('/api/admin/reminders', { method: 'POST', headers: H() }); RP.note($('toolMsg'), `Reminders sent: ${r.sent ?? 0}. Skipped: ${r.skipped ?? 0} (already logged today, opted out, or outside WhatsApp’s 24-hour window).`, 'ok'); }
+  catch (e) { RP.note($('toolMsg'), e.message, 'bad'); }
+});
+$('csv').onclick = () => RP.busy($('csv'), async () => {
+  try {
+    const res = await fetch('/api/admin/interactions.csv', { headers: H() });
+    if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+    const url = URL.createObjectURL(await res.blob()), a = document.createElement('a');
+    a.href = url; a.download = `ridepass-interactions-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (e) { RP.note($('toolMsg'), e.message, 'bad'); }
+});
+$('refresh').onclick = () => RP.busy($('refresh'), async () => { try { await load(); RP.toast('Updated'); } catch (e) { RP.toast(e.message); } });
+$('logout').onclick = () => { RP.store.set('rp_admin', null); location.reload(); };
+if (key) signin();
+</script>
+</body></html>

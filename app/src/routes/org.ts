@@ -110,6 +110,13 @@ export function orgRoutes(r: Router): void {
     const o = createOrg(String(q.json.name), kind);
     sendJson(s, 201, { ...o, note: 'Store this API key now; it is not shown again.' });
   });
+  r.get('/api/admin/orgs', (q, s) => {
+    requireAdmin(q);
+    // Keys are stored hashed and can't be shown again; the prefix lets an admin match a key to its org.
+    sendJson(s, 200, all(`SELECT o.id, o.name, o.kind, o.key_prefix, o.created_at,
+      (SELECT COUNT(*) FROM grants g WHERE g.org_id = o.id AND g.status = 'granted') AS active_grants
+      FROM orgs o ORDER BY o.created_at DESC`));
+  });
   r.get('/api/admin/metrics', async (q, s) => {
     requireAdmin(q);
     sendJson(s, 200, { ...metrics(), active_users_30d: U.activeUserCount(), user_cap: config.userCap,
