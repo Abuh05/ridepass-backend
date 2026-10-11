@@ -8,6 +8,9 @@ import { addDays, clamp, daysBetween, lagosDay, mean, stdev } from './util.ts';
 import { EXPENSE_TYPES, REPAYMENT_TYPES } from './nlu/keywords.ts';
 import type { Row } from './db.ts';
 
+/** Owner answers that prove the owner themselves replied (see AttestVia in attest.ts). */
+export const COUNTED_VIA: readonly string[] = ['whatsapp', 'web_pin'];
+
 export type DayAgg = { day: string; income: number; expenses: number; repaid: number; repaidConfirmed: number; savings: number; flags: number };
 export type ScoreResult = {
   status: 'building' | 'scored';
@@ -26,7 +29,9 @@ const WINDOW = 60;
 
 export function dailyAggregates(userId: string, from: string, to: string): DayAgg[] {
   const rows = liveEntries(userId, from, to);
-  const att = new Map(all(`SELECT a.entry_id, a.status FROM attestations a WHERE a.rider_id = ?`, userId).map((r) => [r.entry_id, r.status]));
+  // A payment counts as owner-confirmed only when the owner provably answered (own WhatsApp number or PIN).
+  const att = new Map(all(`SELECT a.entry_id, a.status, a.via FROM attestations a WHERE a.rider_id = ?`, userId)
+    .map((r) => [r.entry_id, r.status === 'confirmed' && !COUNTED_VIA.includes(r.via) ? 'confirmed_unverified' : r.status]));
   const map = new Map<string, DayAgg>();
   for (const r of rows) {
     const d = map.get(r.day) ?? { day: r.day, income: 0, expenses: 0, repaid: 0, repaidConfirmed: 0, savings: 0, flags: 0 };

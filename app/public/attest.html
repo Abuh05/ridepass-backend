@@ -11,31 +11,66 @@
 </main>
 <script src="/common.js"></script>
 <script>
+// Owner-facing strings. Indexes 5-9 are first drafts in pcm/ha/yo/ig: have a native speaker review them before the pilot.
 const T = {
-  en: ['{r} says they paid you {a} on {d}. Is this correct?', 'Yes, correct', 'Not correct', 'Thank you. Your answer has been recorded.', 'This payment was already answered: '],
-  pcm: ['{r} talk say e pay you {a} on {d}. E correct?', 'Yes, e correct', 'E no correct', 'Thank you. We don record your answer.', 'Dem don answer this one before: '],
-  ha: ['{r} ya ce ya biya ka {a} ranar {d}. Daidai ne?', 'E, daidai ne', 'Ba daidai ba', 'Mun gode. An rubuta amsarka.', 'An riga an amsa wannan: '],
-  yo: ['{r} sọ pé òun san {a} fún yín ní {d}. Ṣé ó tọ̀nà?', 'Bẹ́ẹ̀ni, ó tọ̀nà', 'Kò tọ̀nà', 'A dúpẹ́. A ti kọ ìdáhùn yín sílẹ̀.', 'A ti dáhùn èyí tẹ́lẹ̀: '],
-  ig: ['{r} kwuru na ọ kwụrụ gị {a} n\'ụbọchị {d}. Ọ ziri ezi?', 'Ee, ọ ziri ezi', 'Ọ ziighi ezi', 'Daalụ. Edekọla azịza gị.', 'Azaala nke a: '],
+  en: ['{r} says they paid you {a} on {d}. Is this correct?', 'Yes, correct', 'Not correct', 'Thank you. Your answer has been recorded.', 'This payment was already answered: ',
+    'Your owner PIN', 'Wrong PIN. Please try again.', 'Too many wrong PINs. Try again tomorrow, or ask a RidePass agent to reset your PIN.',
+    'Your answer is recorded, but it will not count as a confirmed payment until you are verified. Ask a RidePass field agent or your leasing company to verify you and set your PIN.',
+    'Enter the PIN you chose when you were verified.'],
+  pcm: ['{r} talk say e pay you {a} on {d}. E correct?', 'Yes, e correct', 'E no correct', 'Thank you. We don record your answer.', 'Dem don answer this one before: ',
+    'Your owner PIN', 'PIN no correct. Try again.', 'You don try wrong PIN too many times. Try again tomorrow, or make RidePass agent reset your PIN.',
+    'We don record your answer, but e no go count as confirmed payment until dem verify you. Make RidePass agent or your leasing company verify you and set your PIN.',
+    'Put the PIN wey you choose when dem verify you.'],
+  ha: ['{r} ya ce ya biya ka {a} ranar {d}. Daidai ne?', 'E, daidai ne', 'Ba daidai ba', 'Mun gode. An rubuta amsarka.', 'An riga an amsa wannan: ',
+    'PIN ɗinka na mai abin hawa', 'PIN ba daidai ba ne. Sake gwadawa.', 'An yi kuskuren PIN sau da yawa. Sake gwadawa gobe, ko ka nemi wakilin RidePass ya sake saita PIN ɗinka.',
+    'An rubuta amsarka, amma ba za a ƙidaya ta a matsayin tabbataccen biya ba sai an tabbatar da kai. Ka nemi wakilin RidePass ko kamfanin haya ya tabbatar da kai kuma ya saita PIN ɗinka.',
+    'Shigar da PIN da ka zaɓa lokacin da aka tabbatar da kai.'],
+  yo: ['{r} sọ pé òun san {a} fún yín ní {d}. Ṣé ó tọ̀nà?', 'Bẹ́ẹ̀ni, ó tọ̀nà', 'Kò tọ̀nà', 'A dúpẹ́. A ti kọ ìdáhùn yín sílẹ̀.', 'A ti dáhùn èyí tẹ́lẹ̀: ',
+    'PIN olówó ọkọ̀ rẹ', 'PIN kò tọ̀nà. Jọ̀ọ́ gbìyànjú lẹ́ẹ̀kan sí i.', 'O ti tẹ PIN tí kò tọ̀nà ní ọ̀pọ̀ ìgbà. Gbìyànjú lọ́la, tàbí kí aṣojú RidePass tún PIN rẹ ṣe.',
+    'A ti kọ ìdáhùn rẹ sílẹ̀, ṣùgbọ́n kò ní kà gẹ́gẹ́ bí owó tí a jẹ́rìí sí títí a ó fi jẹ́rìí rẹ. Jẹ́ kí aṣojú RidePass tàbí ilé-iṣẹ́ ìyálò rẹ jẹ́rìí rẹ kí wọ́n sì ṣètò PIN rẹ.',
+    'Tẹ PIN tí o yàn nígbà tí a jẹ́rìí rẹ.'],
+  ig: ["{r} kwuru na ọ kwụrụ gị {a} n'ụbọchị {d}. Ọ ziri ezi?", 'Ee, ọ ziri ezi', 'Ọ ziighi ezi', 'Daalụ. Edekọla azịza gị.', 'Azaala nke a: ',
+    'PIN gị dịka onye nwe ụgbọ', 'PIN ezighi ezi. Biko nwaa ọzọ.', 'I tinyela PIN na-ezighi ezi ọtụtụ ugboro. Nwaa ọzọ echi, ma ọ bụ gwa onye ọrụ RidePass ka ọ tọgharịa PIN gị.',
+    'Edekọla azịza gị, mana a gaghị agụ ya dịka ụgwọ akwadoro ruo mgbe a nyochara gị. Gwa onye ọrụ RidePass ma ọ bụ ụlọ ọrụ mgbazinye gị ka ha nyochaa gị ma tọọ PIN gị.',
+    'Tinye PIN ị họọrọ mgbe a nyochara gị.'],
 };
 const tok = location.pathname.split('/').pop(), box = document.getElementById('box');
-const done = (text, ok = true) => {
+const done = (text, ok = true, note = '') => {
   box.style.textAlign = 'center';
-  box.innerHTML = `<div class="success-mark"${ok ? '' : ' style="background:var(--warn-bg);color:var(--warn)"'}>${RP.icon(ok ? 'check' : 'alert')}</div><h2>${RP.esc(text)}</h2>`;
+  box.innerHTML = `<div class="success-mark"${ok ? '' : ' style="background:var(--warn-bg);color:var(--warn)"'}>${RP.icon(ok ? 'check' : 'alert')}</div><h2>${RP.esc(text)}</h2>${note ? `<div class="notice warn" style="text-align:left">${RP.esc(note)}</div>` : ''}`;
 };
 (async () => {
   try {
     const a = await RP.api('/api/attest/' + encodeURIComponent(tok)), t = T[a.lang] || T.en;
     document.documentElement.lang = a.lang === 'pcm' ? 'en' : a.lang || 'en';
     if (a.status !== 'pending') return done(t[4] + a.status, false);
+    if (a.locked) return done(t[7], false);
     box.innerHTML = `<div class="icon-chip">${RP.icon('wallet')}</div>
       <p class="attest-q">${RP.esc(t[0].replace('{r}', a.rider).replace('{a}', a.amount).replace('{d}', a.day))}</p>
+      ${a.needs_pin ? `<div class="field" style="margin-bottom:16px"><label for="pin">${RP.esc(t[5])}</label>
+        <input id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••" style="font-size:22px;letter-spacing:.3em;text-align:center">
+        <p class="hint" style="margin-top:6px">${RP.esc(t[9])}</p></div>` : ''}
       <div class="big-actions"><button class="lg" id="y">${RP.icon('check')}${RP.esc(t[1])}</button><button class="lg danger" id="n">${RP.icon('x')}${RP.esc(t[2])}</button></div>
+      <div class="notice bad" id="perr"></div>
       <p class="muted" style="margin-top:16px">RidePass records your answer to help riders build a trusted repayment history.</p>`;
+    const btns = () => document.querySelectorAll('.big-actions button');
     const answer = async (confirm, btn) => {
-      document.querySelectorAll('.big-actions button').forEach((b) => (b.disabled = true));
-      try { await RP.busy(btn, () => RP.api('/api/attest/' + encodeURIComponent(tok), { method: 'POST', body: { confirm } })); done(t[3]); }
-      catch (e) { document.querySelectorAll('.big-actions button').forEach((b) => (b.disabled = false)); RP.toast(e.message); }
+      RP.note(document.getElementById('perr'), '');
+      const pinEl = document.getElementById('pin');
+      if (pinEl && !/^\d{4,6}$/.test(pinEl.value)) { RP.note(document.getElementById('perr'), t[9], 'bad'); pinEl.focus(); return; }
+      btns().forEach((b) => (b.disabled = true));
+      try {
+        const r = await RP.busy(btn, () => RP.api('/api/attest/' + encodeURIComponent(tok), { method: 'POST', body: { confirm, pin: pinEl ? pinEl.value : undefined } }));
+        done(t[3], true, r && r.counted === false ? t[8] : '');
+      } catch (e) {
+        if (e.status === 429) return done(t[7], false);
+        btns().forEach((b) => (b.disabled = false));
+        if (e.status === 403) {
+          const left = (e.message.match(/(\d+) attempt/) || [])[1];
+          RP.note(document.getElementById('perr'), t[6] + (left ? ` (${left}/5)` : ''), 'bad'); pinEl.value = ''; pinEl.focus();
+        }
+        else RP.toast(e.message);
+      }
     };
     const y = document.getElementById('y'), n = document.getElementById('n');
     y.onclick = () => answer(true, y); n.onclick = () => answer(false, n);

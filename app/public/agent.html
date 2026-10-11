@@ -49,7 +49,9 @@
       <details>
         <summary>Verify an owner in person</summary>
         <form id="ownerForm">
+          <p class="hint" style="margin-top:8px">Only after you have seen the owner’s ID and proof they own the vehicle. Let the owner type a PIN they will remember: they need it to confirm payments.</p>
           <label for="ophone">Owner phone</label><input id="ophone" inputmode="tel" placeholder="08031234567" required>
+          <label for="opin">Owner’s PIN (owner types it)</label><input id="opin" type="password" inputmode="numeric" maxlength="6" placeholder="4–6 digits" autocomplete="off" required>
           <div class="actions"><button class="secondary block" id="verifyOwner" type="submit">Mark owner verified</button></div>
         </form>
       </details>
@@ -125,7 +127,7 @@ $('riderForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('open'), openRi
 $('ownerForm').onsubmit = (e) => {
   e.preventDefault();
   RP.busy($('verifyOwner'), async () => {
-    try { await RP.api('/api/agent/verify-owner', { method: 'POST', headers: H(), body: { phone: $('ophone').value } }); RP.note($('rerr'), 'Owner verified ✓', 'ok'); $('ophone').value = ''; }
+    try { await RP.api('/api/agent/verify-owner', { method: 'POST', headers: H(), body: { phone: $('ophone').value, pin: $('opin').value } }); RP.note($('rerr'), 'Owner verified ✓ Their confirmations now need this PIN, and they count as verified.', 'ok'); $('ophone').value = ''; $('opin').value = ''; }
     catch (e) { RP.note($('rerr'), e.message, 'bad'); }
   });
 };

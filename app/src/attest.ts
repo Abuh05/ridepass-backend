@@ -39,9 +39,31 @@ export function requestAttestation(rider: User, entry: Row): { sentToOwner: bool
   return { sentToOwner: false, link }; // rider forwards the signed link instead
 }
 
-export function respondAttestation(attId: string, confirmed: boolean, via: 'whatsapp' | 'web'): Row | null {
+/**
+ * How a confirmation arrived decides whether it counts:
+ *  - whatsapp: answered from the owner's own WhatsApp number
+ *  - web_pin:  answered on the link with the owner's PIN (set in person by an agent or lessor)
+ *  - web_link: answered on the link without a PIN. Anyone holding the link (including the rider
+ *              who forwarded it) could have tapped it, so a "Yes" this way is recorded but not counted.
+ */
+export type AttestVia = 'whatsapp' | 'web_pin' | 'web_link'; // counted ones: COUNTED_VIA in scoring.ts
+
+const PIN_MAX_FAILS = 5;
+const PIN_WINDOW_MS = 24 * 3600_000;
+export function pinFailures(ownerId: string): number {
+  return (one('SELECT COUNT(*) c FROM owner_pin_failures WHERE owner_id = ? AND at > ?', ownerId, new Date(Date.now() - PIN_WINDOW_MS).toISOString())?.c as number) ?? 0;
+}
+export const pinLocked = (ownerId: string): boolean => pinFailures(ownerId) >= PIN_MAX_FAILS;
+export const pinAttemptsLeft = (ownerId: string): number => Math.max(0, PIN_MAX_FAILS - pinFailures(ownerId));
+export function recordPinFailure(ownerId: string): void { run('INSERT INTO owner_pin_failures (owner_id, at) VALUES (?,?)', ownerId, nowIso()); }
+export function clearPinFailures(ownerId: string): void { run('DELETE FROM owner_pin_failures WHERE owner_id = ?', ownerId); }
+
+/** Record the owner's answer. `byUserId` (when known) must be the owner, so nobody else can answer for them. */
+export function respondAttestation(attId: string, confirmed: boolean, via: AttestVia, byUserId?: string): Row | null {
   const a = one('SELECT * FROM attestations WHERE id = ?', attId);
-  if (!a || a.status !== 'pending') return a ?? null;
+  if (!a) return null;
+  if (byUserId !== undefined && byUserId !== a.owner_id) return null;
+  if (a.status !== 'pending') return a;
   run('UPDATE attestations SET status = ?, via = ?, responded_at = ? WHERE id = ?', confirmed ? 'confirmed' : 'disputed', via, nowIso(), attId);
   recordConsent(a.owner_id as string, 'owner_attestation', true, { attId, via });
   const owner = getUser(a.owner_id as string);

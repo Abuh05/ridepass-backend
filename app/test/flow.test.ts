@@ -75,7 +75,7 @@ test('voice log → read-back → confirm → hash-chained ledger + owner attest
   const link = msgs.match(/https:\/\/ridepass\.test\/a\/([\w-]+)/);
   assert.ok(link, 'owner cannot be messaged on WhatsApp yet, so rider gets a link to forward');
   const att = attestationByToken(link![1])!;
-  respondAttestation(att.id, true, 'web');
+  respondAttestation(att.id, true, 'web_pin');
   assert.equal(one('SELECT status FROM attestations WHERE id = ?', att.id)!.status, 'confirmed');
   const inter = one(`SELECT * FROM interactions WHERE kind = 'audio' AND direction = 'in'`)!;
   assert.equal(inter.outcome, 'confirmed');
@@ -103,9 +103,30 @@ test('owner disputes a payment → rider told, verification drops', async () => 
   await voice('owner 3000');
   await tap('cf:y');
   const att = one('SELECT * FROM attestations')!;
-  respondAttestation(att.id, false, 'web');
+  respondAttestation(att.id, false, 'web_link');
   await drain();
   assert.match(outbox().map((m) => m.text).join('\n'), /said the ₦3,000 payment/);
+});
+
+test('a "Yes" on the forwarded link without a PIN is recorded but does not count as owner-confirmed', async () => {
+  await onboard();
+  await voice('owner 3000'); await tap('cf:y');
+  const att = one('SELECT * FROM attestations')!;
+  respondAttestation(att.id, true, 'web_link');
+  assert.equal(one('SELECT status FROM attestations WHERE id = ?', att.id)!.status, 'confirmed', 'the answer is kept for the record');
+  assert.equal(computeScore(rider()).stats.total_repaid_confirmed, 0, 'but it does not count');
+  run(`UPDATE attestations SET via = 'web_pin' WHERE id = ?`, att.id);
+  assert.equal(computeScore(rider()).stats.total_repaid_confirmed, 3000, 'a PIN-verified answer counts');
+});
+
+test('only the owner can answer a payment confirmation by button', async () => {
+  await onboard();
+  await voice('owner 3000'); await tap('cf:y');
+  const att = one('SELECT * FROM attestations')!;
+  await tap(`att:${att.id}:y`); // the rider tries to confirm their own payment
+  assert.equal(one('SELECT status FROM attestations WHERE id = ?', att.id)!.status, 'pending');
+  await tap(`att:${att.id}:y`, OWNER); // the owner answers from their own number
+  assert.equal(one('SELECT via FROM attestations WHERE id = ?', att.id)!.via, 'whatsapp');
 });
 
 test('score needs 14 days, then a signed passport verifies; tampering is detected', async () => {
@@ -120,8 +141,8 @@ test('score needs 14 days, then a signed passport verifies; tampering is detecte
       { type: 'fuel', amount: 4500, day, source: 'voice' },
       { type: 'owner_payment', amount: 3000, day, source: 'voice' },
     ]);
-    run(`INSERT INTO attestations (id, entry_id, rider_id, owner_id, token_hash, status, created_at) VALUES (?,?,?,?,?,?,?)`,
-      'a' + i, saved[2].id, u.id, u.owner_id, 'x' + i, i % 5 === 0 ? 'pending' : 'confirmed', new Date().toISOString());
+    run(`INSERT INTO attestations (id, entry_id, rider_id, owner_id, token_hash, status, via, created_at) VALUES (?,?,?,?,?,?,?,?)`,
+      'a' + i, saved[2].id, u.id, u.owner_id, 'x' + i, i % 5 === 0 ? 'pending' : 'confirmed', 'whatsapp', new Date().toISOString());
   }
   const s = computeScore(rider());
   assert.equal(s.status, 'scored');

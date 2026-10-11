@@ -86,9 +86,10 @@
     </section>
 
     <section class="card" id="ownerCard">
-      <div class="card-head"><div class="icon-chip" data-icon="shield"></div><div><h2>Register your collection phone</h2><p class="muted">Payments your riders report are confirmed from this WhatsApp number. Registered numbers count as <b>verified owners</b> in the score.</p></div></div>
+      <div class="card-head"><div class="icon-chip" data-icon="shield"></div><div><h2>Register your collection phone</h2><p class="muted">Payments your riders report are confirmed from this number. Set a PIN that only your collection staff know: payment links for this number ask for it, so riders can’t confirm their own payments.</p></div></div>
       <form id="ownerForm" class="form-grid" style="align-items:end">
         <div class="field"><label for="ophone">Collection phone</label><input id="ophone" inputmode="tel" placeholder="08031234567" required></div>
+        <div class="field"><label for="opin">Confirmation PIN</label><input id="opin" type="password" inputmode="numeric" maxlength="6" placeholder="4–6 digits" autocomplete="off" required></div>
         <div class="actions" style="margin-top:0"><button class="secondary" id="oreg" type="submit">Register phone</button></div>
       </form>
       <div class="notice" id="oerr"></div>
@@ -244,7 +245,7 @@ $('affForm').onsubmit = (e) => {
 $('ownerForm').onsubmit = (e) => {
   e.preventDefault();
   RP.busy($('oreg'), async () => {
-    try { await RP.api('/api/agent/verify-owner', { method: 'POST', headers: H(), body: { phone: $('ophone').value } }); RP.note($('oerr'), 'Registered ✓ — confirmations from this number now count as a verified owner.', 'ok'); }
+    try { await RP.api('/api/agent/verify-owner', { method: 'POST', headers: H(), body: { phone: $('ophone').value, pin: $('opin').value } }); RP.note($('oerr'), 'Registered ✓ Payment links for this number now ask for this PIN, and your confirmations count as a verified owner.', 'ok'); $('opin').value = ''; }
     catch (e) { RP.note($('oerr'), e.message, 'bad'); }
   });
 };

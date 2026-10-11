@@ -141,7 +141,8 @@
     <li>“After 14 days of logging, send <span class="kbd">PASSPORT</span> to get your score and a share code.”</li>
   </ul>
   <h3>Verify an owner in person</h3>
-  <p>Open <b>Verify an owner in person</b> under the rider form, enter the owner’s phone, and tap <b>Mark owner verified</b>, but only after you have seen their ID and proof they own the vehicle. Verified owners’ confirmations count in full.</p>
+  <p>Open <b>Verify an owner in person</b> under the rider form, but only after you have seen the owner’s ID and proof they own the vehicle. Enter the owner’s phone, then <b>hand the phone to the owner to type a 4–6 digit PIN</b> that only they know. Tap <b>Mark owner verified</b>.</p>
+  <p>From then on, every payment link for that owner asks for the PIN. A rider who forwards the link can’t confirm their own payment. If the owner forgets the PIN, or it locks after 5 wrong tries, verify them again with a new PIN.</p>
   <div class="callout tip"><span class="ci" data-icon="mic"></span><span><b>Good recordings:</b> a quiet spot, phone 10–20 cm from the mouth, 3–10 seconds, amounts said clearly. Watch the green level bar move while they speak. If it stays flat, the microphone isn’t working.</span></div>
 </div></section>
 
@@ -174,9 +175,12 @@
   <ol class="steps-list">
     <li>When your rider logs a payment to you, you receive a <b>link</b> (forwarded by the rider, or by WhatsApp once it is live).</li>
     <li>Open it. It says, in the rider’s language, “<i>Musa says they paid you ₦3,000 on 2026-10-11. Is this correct?</i>”</li>
-    <li>Tap <b>Yes, correct</b> or <b>Not correct</b>. That’s all. A “Not correct” answer is shown to the rider and doesn’t count.</li>
+    <li><b>Verified owners</b> type their owner PIN. <b>Never tell the rider your PIN</b>; it is what proves the answer came from you.</li>
+    <li>Tap <b>Yes, correct</b> or <b>Not correct</b>. A “Not correct” is shown to the rider and the payment doesn’t count.</li>
   </ol>
-  <div class="callout tip"><span class="ci" data-icon="shield"></span><span>Owners who are leasing companies should register their collection phone in the dashboard (see <a href="#lessor">Lessor</a>). Independent owners can be verified in person by a field agent.</span></div>
+  <h3>Why owners must be verified</h3>
+  <p>The link travels through the rider, so anyone holding it could tap “Yes”. That’s why a <b>“Yes” from an unverified owner is recorded but does not count</b> as a confirmed payment. Only answers made with the owner’s PIN, or sent from the owner’s own WhatsApp number, count.</p>
+  <div class="callout tip"><span class="ci" data-icon="shield"></span><span>To get verified: <b>leasing companies</b> register their collection phone and PIN in the dashboard (see <a href="#lessor">Lessor</a>). <b>Independent owners</b> meet a field agent with their ID and vehicle papers.</span></div>
 </div></section>
 
 <section class="g-sec" id="lessor" data-title="Lessor"><div class="card">
@@ -184,7 +188,7 @@
   <h2>Lessor: track daily repayments</h2>
   <ol class="steps-list">
     <li><b>Sign in</b> at <a href="/dashboard">/dashboard</a> with the key from the RidePass admin.</li>
-    <li><b>Register your collection phone</b> (bottom of the dashboard). Payments your riders report are confirmed from this number, and it counts as a <b>verified owner</b>.</li>
+    <li><b>Register your collection phone and a PIN</b> (bottom of the dashboard). Payment links for that number ask for the PIN, so only your collection staff can confirm. Keep the PIN away from riders.</li>
     <li><b>Ask each rider for access:</b> enter their phone, choose <b>Daily repayment tracking</b>, enter the daily amount due, and tap <b>Send request</b>. The rider must already be onboarded.</li>
     <li><b>The rider approves</b> in their own chat. Tap <b>Refresh</b> and they appear in your portfolio.</li>
   </ol>
@@ -248,6 +252,8 @@ nohup ./start.sh &gt; /workspace/models.log 2&gt;&amp;1 &amp;</pre></li>
       <tr><td data-label="" class="full"><b>Rider forgot their PIN</b></td><td data-label="Fix">A field agent opens the rider with a new PIN in “Set rider PIN”.</td></tr>
       <tr><td data-label="" class="full"><b>“Building history” instead of a score</b></td><td data-label="Fix">Normal until the rider has 14 active days of logs.</td></tr>
       <tr><td data-label="" class="full"><b>An organisation lost its key</b></td><td data-label="Fix">Create a new key in /admin and give it to them. Keys cannot be shown again.</td></tr>
+      <tr><td data-label="" class="full"><b>Owner: “Too many wrong PINs”</b></td><td data-label="Fix">The owner’s PIN is locked for 24 hours. A field agent (or the lessor, for their collection phone) can verify the owner again with a new PIN, which unlocks it right away.</td></tr>
+      <tr><td data-label="" class="full"><b>Owner confirmed but the payment isn’t counted</b></td><td data-label="Fix">The owner isn’t verified yet. Verify them with a PIN; future confirmations will count.</td></tr>
       <tr><td data-label="" class="full"><b>Share code “invalid or expired”</b></td><td data-label="Fix">Codes last 7 days. Ask the rider to send PASSPORT again for a fresh one.</td></tr>
     </tbody>
   </table></div>

@@ -71,14 +71,15 @@ export async function handleInbound(m: Inbound, attempt = 1): Promise<void> {
   // Buttons that work in any state
   if (m.kind === 'button' && m.buttonId) {
     const [kind, id, ans] = m.buttonId.split(':');
-    if (kind === 'att') { respondAttestation(id, ans === 'y', 'whatsapp'); return; }
+    // Only the owner the confirmation was sent to may answer it (ignored for anyone else).
+    if (kind === 'att') { respondAttestation(id, ans === 'y', 'whatsapp', user.id); return; }
     if (kind === 'grant') return grantDecision(ctx, id, ans === 'y');
   }
   // Owners replying 1/2 to a payment confirmation
   if (user.role === 'owner' && !user.consent_at) {
     const pend = pendingForOwner(user.id);
     const yn = yesNo(m.text ?? '');
-    if (pend.length && yn !== null) { respondAttestation(pend[0].id, yn, 'whatsapp'); return; }
+    if (pend.length && yn !== null) { respondAttestation(pend[0].id, yn, 'whatsapp', user.id); return; }
     if (pend.length) { reply(ctx, { text: t(user.lang, 'owner_reply_hint') }); return; }
   }
 
