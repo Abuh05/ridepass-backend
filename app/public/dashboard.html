@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RidePass — Lessor & Lender Dashboard</title>
+<meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
+<style>
+  #portfolio tbody tr { cursor: pointer; }
+  .code-input { text-transform: uppercase; letter-spacing: .14em; font-family: var(--mono); font-size: 17px; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Lessor &amp; lender dashboard</small></span></a>
+  <span class="spacer"></span>
+  <div class="who hidden" id="who"></div>
+  <button class="ghost hidden" id="logout" title="Sign out"></button>
+</div></header>
+<main>
+  <div class="center-wrap" id="keyCard" style="min-height:calc(100vh - 120px)">
+    <section class="card">
+      <div class="card-head"><div class="icon-chip blue" data-icon="key"></div><div><h2>Sign in</h2><p class="muted">Use your organisation API key from RidePass.</p></div></div>
+      <form id="keyForm">
+        <label for="key">Organisation API key</label><input id="key" type="password" placeholder="rp_xxxxxxxx_…" autocomplete="off" required>
+        <p class="error" id="kerr"></p>
+        <div class="actions"><button class="block lg" id="signin" type="submit">Sign in</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="page-head">
+      <div><h1 id="hello">Overview</h1><p id="sub">Rider repayment and credit passports shared with you.</p></div>
+      <span class="spacer"></span>
+      <button class="secondary" id="refresh"></button>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <section class="card" id="portfolioCard">
+      <div class="card-head">
+        <div class="icon-chip" data-icon="chart"></div>
+        <div><h2>Repayment portfolio</h2><p class="muted">Riders who allowed daily repayment tracking. Click a row to open their passport.</p></div>
+      </div>
+      <div class="legend" style="margin-bottom:12px">
+        <span><span class="cal"><i class="paid_confirmed"></i></span>Owner-confirmed</span>
+        <span><span class="cal"><i class="paid_unconfirmed"></i></span>Self-reported</span>
+        <span><span class="cal"><i class="short_unconfirmed"></i></span>Short</span>
+        <span><span class="cal"><i class="missed"></i></span>Nothing logged</span>
+      </div>
+      <div class="table-wrap"><table id="portfolio"></table></div>
+    </section>
+
+    <div class="cols two" style="margin-bottom:16px">
+      <section class="card">
+        <div class="card-head"><div class="icon-chip" data-icon="users"></div><div><h2>Ask a rider for access</h2><p class="muted">The rider approves or refuses in their own language. Every view is logged and visible to them.</p></div></div>
+        <form id="askForm">
+          <div class="form-grid">
+            <div class="field"><label for="gphone">Rider phone</label><input id="gphone" inputmode="tel" placeholder="08031234567" required></div>
+            <div class="field"><label for="gscope">Access</label><select id="gscope"><option value="passport">Credit passport (30 days)</option><option value="portfolio">Daily repayment tracking</option></select></div>
+            <div class="field" id="gdueWrap"><label for="gdue">Daily amount due (₦)</label><input id="gdue" inputmode="numeric" placeholder="3000"></div>
+          </div>
+          <div class="actions"><button id="ask" type="submit">Send request</button></div>
+          <div class="notice" id="gerr"></div>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><div class="icon-chip amber" data-icon="ticket"></div><div><h2>Redeem a share code</h2><p class="muted">Riders can hand you an 8-character code from WhatsApp (send <b>PASSPORT</b>).</p></div></div>
+        <form id="codeForm">
+          <label for="code">Code from rider</label><input id="code" class="code-input" placeholder="AB3K7Q2M" maxlength="12" autocomplete="off" required>
+          <div class="actions"><button id="redeem" type="submit">View passport</button></div>
+          <div class="notice" id="cerr"></div>
+        </form>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <div class="icon-chip blue" data-icon="inbox"></div>
+        <div><h2>Access requests</h2><p class="muted">Requests you've sent and their current status.</p></div>
+        <span class="spacer"></span>
+        <div class="seg" id="gfilter"><button class="on" data-f="all">All</button><button data-f="granted">Granted</button><button data-f="pending">Pending</button></div>
+      </div>
+      <div class="table-wrap"><table id="grants"></table></div>
+    </section>
+
+    <section class="card" id="ownerCard">
+      <div class="card-head"><div class="icon-chip" data-icon="shield"></div><div><h2>Register your collection phone</h2><p class="muted">Payments your riders report are confirmed from this WhatsApp number. Registered numbers count as <b>verified owners</b> in the score.</p></div></div>
+      <form id="ownerForm" class="form-grid" style="align-items:end">
+        <div class="field"><label for="ophone">Collection phone</label><input id="ophone" inputmode="tel" placeholder="08031234567" required></div>
+        <div class="actions" style="margin-top:0"><button class="secondary" id="oreg" type="submit">Register phone</button></div>
+      </form>
+      <div class="notice" id="oerr"></div>
+    </section>
+  </div>
+</main>
+
+<div class="drawer-backdrop hidden" id="backdrop"></div>
+<aside class="drawer hidden" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+  <div class="drawer-head"><h2 id="drawerTitle">Credit passport</h2><button class="ghost" id="closeDrawer" aria-label="Close"></button></div>
+  <div class="drawer-body">
+    <form class="card" id="affForm" style="margin-bottom:16px">
+      <div class="form-grid" style="align-items:end">
+        <div class="field"><label for="prop">Proposed daily repayment (₦)</label><input id="prop" inputmode="numeric" placeholder="e.g. 3000"></div>
+        <div class="actions" style="margin-top:0"><button class="secondary" id="affBtn" type="submit">Check affordability</button></div>
+      </div>
+      <label class="check"><input type="checkbox" id="repl"> Replaces the rider's current owner payment</label>
+    </form>
+    <div id="passport"></div>
+  </div>
+</aside>
+
+<script src="/common.js"></script><script src="/passport-view.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const E = RP.esc, N = RP.naira;
+let key = RP.store.get('rp_org'), me, grants = [], gFilter = 'all', current = null;
+const H = () => ({ 'x-api-key': key });
+document.querySelectorAll('[data-icon]').forEach((el) => (el.innerHTML = RP.icon(el.dataset.icon)));
+$('refresh').innerHTML = RP.icon('refresh') + 'Refresh';
+$('logout').innerHTML = RP.icon('logout') + '<span>Sign out</span>';
+$('closeDrawer').innerHTML = RP.icon('x');
+
+async function signin() {
+  key = $('key').value.trim() || key; $('kerr').textContent = '';
+  try {
+    me = await RP.api('/api/org/me', { headers: H() });
+    if (me.kind === 'agent') throw new Error('This is an agent key — use the field agent app at /agent.');
+    RP.store.set('rp_org', key);
+    $('who').innerHTML = `<b>${E(me.name)}</b>${me.kind === 'lessor' ? 'Lessor' : 'Lender'}`;
+    $('who').classList.remove('hidden'); $('logout').classList.remove('hidden');
+    $('hello').textContent = me.name;
+    $('keyCard').classList.add('hidden'); $('app').classList.remove('hidden');
+    if (me.kind !== 'lessor') {
+      $('portfolioCard').classList.add('hidden'); $('ownerCard').classList.add('hidden');
+      $('gscope').querySelector('[value=portfolio]').remove(); $('gdueWrap').classList.add('hidden');
+    }
+    await load();
+  } catch (e) { $('kerr').textContent = e.message; RP.store.set('rp_org', null); $('keyCard').classList.remove('hidden'); }
+}
+function logout() { RP.store.set('rp_org', null); location.reload(); }
+
+const statusPill = (s) => `<span class="pill ${s === 'granted' ? 'ok' : s === 'pending' ? 'warn' : 'bad'}"><span class="dot"></span>${E(s)}</span>`;
+const riderCell = (r) => r
+  ? `<div class="rider-cell"><span class="avatar">${E(RP.initials(r.first_name))}</span><div><b>${E(r.first_name)}</b><span>${E([r.vehicle, (r.ownership || '').replace(/_/g, ' ')].filter(Boolean).join(' · '))}</span></div></div>`
+  : '<span class="muted">Deleted at rider’s request</span>';
+const kpi = (label, value, sub, alert) => `<div class="kpi${alert ? ' alert' : ''}"><div class="k-label">${label}</div><div class="k-value">${value}</div>${sub ? `<div class="k-sub">${sub}</div>` : ''}</div>`;
+
+function renderGrants() {
+  const rows = grants.filter((g) => gFilter === 'all' || g.status === gFilter);
+  $('grants').innerHTML = '<thead><tr><th>Rider</th><th>Access</th><th>Status</th><th>Requested</th><th></th></tr></thead><tbody>' +
+    (rows.length ? rows.map((g) => `<tr><td>${riderCell(g.rider)}</td>
+      <td>${g.scope === 'portfolio' ? 'Repayment tracking' + (g.daily_due ? ` <span class="muted">· ${N(g.daily_due)}/day</span>` : '') : 'Credit passport'}</td>
+      <td>${statusPill(g.status)}</td><td class="nowrap">${E(g.created_at.slice(0, 10))}</td>
+      <td class="num">${g.status === 'granted' && g.rider ? `<button class="secondary sm" data-g="${E(g.grant_id)}">View passport</button>` : ''}</td></tr>`).join('')
+    : `<tr><td colspan="5"><div class="empty">${gFilter === 'all' ? 'No requests yet. Ask a rider for access above.' : 'Nothing ' + gFilter + '.'}</div></td></tr>`) + '</tbody>';
+  $('grants').querySelectorAll('button[data-g]').forEach((b) => (b.onclick = () => openPassport({ grant: b.dataset.g })));
+}
+
+async function load() {
+  grants = await RP.api('/api/org/grants', { headers: H() });
+  renderGrants();
+  const granted = grants.filter((g) => g.status === 'granted').length, pending = grants.filter((g) => g.status === 'pending').length;
+  if (me.kind !== 'lessor') {
+    $('kpis').innerHTML = kpi('Active passports', granted, 'riders sharing with you') + kpi('Pending requests', pending, 'awaiting rider approval') + kpi('Total requests', grants.length, '');
+    return;
+  }
+  const p = await RP.api('/api/org/portfolio', { headers: H() });
+  let paidToday = 0, alerts = 0, arrears = 0, paidDays = 0, dueDays = 0;
+  for (const r of p.riders) {
+    const last = r.calendar[r.calendar.length - 1];
+    if (last && /^paid|^short/.test(last.status)) paidToday++;
+    if (r.alert) alerts++;
+    arrears += r.estimated_arrears;
+    for (const c of r.calendar) { if (c.status !== 'no_obligation') { dueDays++; if (/^paid/.test(c.status)) paidDays++; } }
+  }
+  $('kpis').innerHTML =
+    kpi('Riders tracked', p.riders.length, pending ? `${pending} request${pending > 1 ? 's' : ''} pending` : 'with daily tracking') +
+    kpi('Paid today', `${paidToday}<span class="muted" style="font-size:16px;font-weight:600"> / ${p.riders.length}</span>`, 'logged a repayment today') +
+    kpi(`On-time rate · ${p.days}d`, dueDays ? Math.round((paidDays / dueDays) * 100) + '%' : '—', 'days paid in full') +
+    kpi('Estimated arrears', N(arrears), alerts ? `${alerts} rider${alerts > 1 ? 's' : ''} need attention` : 'no active alerts', alerts > 0);
+  $('portfolio').innerHTML = `<thead><tr><th>Rider</th><th class="num">Daily due</th><th>Last ${p.days} days</th><th class="num">Missed</th><th class="num">Arrears (est.)</th><th>Score</th><th>Alert</th></tr></thead><tbody>` +
+    (p.riders.length ? p.riders.map((r) => `<tr data-g="${E(r.grant_id)}"><td>${riderCell(r.rider)}</td><td class="num">${N(r.daily_due)}</td>
+      <td><span class="cal">${r.calendar.map((c) => `<i class="${E(c.status)}" title="${E(c.day)}: ${E(c.status.replace(/_/g, ' '))} ${N(c.repaid)}"></i>`).join('')}</span></td>
+      <td class="num">${r.missed_days}</td><td class="num">${N(r.estimated_arrears)}</td>
+      <td class="nowrap">${r.score != null ? `<b>${r.score}</b> <span class="pill ${'AB'.includes(r.band) ? 'ok' : r.band === 'C' ? 'warn' : 'bad'}">${E(r.band)}</span>` : '<span class="pill">Building</span>'}</td>
+      <td>${r.alert ? `<span class="pill bad"><span class="dot"></span>${E(r.alert)}</span>` : '<span class="muted">—</span>'}</td></tr>`).join('')
+    : '<tr><td colspan="7"><div class="empty">No riders yet. Send a “Daily repayment tracking” request below.</div></td></tr>') + '</tbody>';
+  $('portfolio').querySelectorAll('tr[data-g]').forEach((tr) => (tr.onclick = () => openPassport({ grant: tr.dataset.g })));
+}
+
+/** Open the drawer for a passport from a grant or a share code; re-used for affordability checks. */
+async function openPassport(src) {
+  current = src;
+  $('passport').innerHTML = '<div class="card"><div class="skeleton" style="width:40%;margin-bottom:12px"></div><div class="skeleton" style="width:70%;margin-bottom:12px"></div><div class="skeleton" style="width:55%"></div></div>';
+  showDrawer(true);
+  try { await fetchPassport(); } catch (e) { $('passport').innerHTML = `<div class="notice bad">${E(e.message)}</div>`; }
+}
+async function fetchPassport() {
+  const prop = Number($('prop').value.replace(/[^\d]/g, '')) || 0, repl = $('repl').checked;
+  const p = current.grant
+    ? await RP.api(`/api/org/grants/${encodeURIComponent(current.grant)}/passport${prop ? `?proposed_daily=${prop}${repl ? '&replaces_current=1' : ''}` : ''}`, { headers: H() })
+    : await RP.api('/api/org/share-code', { method: 'POST', headers: H(), body: { code: current.code, proposed_daily: prop || undefined, replaces_current: repl } });
+  const v = await RP.api('/api/verify', { method: 'POST', body: { payload: p.payload, signature: p.signature } });
+  renderPassport($('passport'), p.payload, v, p.affordability);
+  $('drawerTitle').textContent = p.payload.rider.first_name + '’s passport';
+}
+function showDrawer(on) {
+  for (const id of ['drawer', 'backdrop']) {
+    const el = $(id);
+    if (on) { el.classList.remove('hidden'); requestAnimationFrame(() => el.classList.add('open')); }
+    else { el.classList.remove('open'); setTimeout(() => el.classList.add('hidden'), 250); }
+  }
+  document.body.style.overflow = on ? 'hidden' : '';
+  if (on) setTimeout(() => $('closeDrawer').focus(), 50);
+}
+
+$('keyForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('signin'), signin); };
+$('askForm').onsubmit = (e) => {
+  e.preventDefault(); RP.note($('gerr'), '');
+  RP.busy($('ask'), async () => {
+    try {
+      const r = await RP.api('/api/org/grants', { method: 'POST', headers: H(), body: { phone: $('gphone').value, scope: $('gscope').value, daily_due: $('gdue').value || undefined } });
+      RP.note($('gerr'), r.note, r.delivered ? 'ok' : 'warn'); await load();
+    } catch (e) { RP.note($('gerr'), e.message, 'bad'); }
+  });
+};
+$('gscope').onchange = () => $('gdueWrap').classList.toggle('hidden', $('gscope').value !== 'portfolio');
+$('gdueWrap').classList.add('hidden');
+$('codeForm').onsubmit = (e) => {
+  e.preventDefault(); RP.note($('cerr'), '');
+  RP.busy($('redeem'), async () => {
+    const prev = current;
+    current = { code: $('code').value.trim() };
+    try { await fetchPassport(); showDrawer(true); }
+    catch (e) { current = prev; RP.note($('cerr'), e.message, 'bad'); }
+  });
+};
+$('affForm').onsubmit = (e) => {
+  e.preventDefault();
+  RP.busy($('affBtn'), async () => { try { await fetchPassport(); } catch (e) { RP.toast(e.message); } });
+};
+$('ownerForm').onsubmit = (e) => {
+  e.preventDefault();
+  RP.busy($('oreg'), async () => {
+    try { await RP.api('/api/agent/verify-owner', { method: 'POST', headers: H(), body: { phone: $('ophone').value } }); RP.note($('oerr'), 'Registered ✓ — confirmations from this number now count as a verified owner.', 'ok'); }
+    catch (e) { RP.note($('oerr'), e.message, 'bad'); }
+  });
+};
+$('gfilter').onclick = (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  gFilter = b.dataset.f; $('gfilter').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); renderGrants();
+};
+$('refresh').onclick = () => RP.busy($('refresh'), async () => { try { await load(); RP.toast('Updated'); } catch (e) { RP.toast(e.message); } });
+$('closeDrawer').onclick = $('backdrop').onclick = () => showDrawer(false);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('drawer').classList.contains('hidden')) showDrawer(false); });
+$('logout').onclick = logout;
+if (key) signin();
+</script>
+</body></html>

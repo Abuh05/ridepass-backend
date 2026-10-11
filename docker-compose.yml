@@ -1,0 +1,26 @@
+# Local/all-in-one setup. On a single GPU server: docker compose up -d
+# (Or run the app on Railway/any VPS and only the model service on a rented GPU — see docs/DEPLOY.md.)
+services:
+  models:
+    build: ./model-service
+    environment:
+      HF_TOKEN: ${HF_TOKEN}
+      MODEL_SERVICE_TOKEN: ${MODEL_SERVICE_TOKEN}
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+    volumes: ["hf-cache:/root/.cache/huggingface"]
+    ports: ["8000:8000", "9000:9000"]
+  app:
+    build: ./app
+    env_file: ./app/.env
+    environment:
+      ASR_URL: http://models:9000
+      LLM_BASE_URL: http://models:8000/v1
+    volumes: ["ridepass-data:/app/data"]
+    ports: ["8080:8080"]
+    depends_on: [models]
+volumes:
+  hf-cache:
+  ridepass-data:

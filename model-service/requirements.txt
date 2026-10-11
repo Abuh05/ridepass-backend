@@ -1,0 +1,5 @@
+# The Docker image (vllm/vllm-openai) already ships torch, transformers and vLLM.
+# For a bare-metal install run first:  pip install "vllm>=0.6.6"   (pulls torch + transformers)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9

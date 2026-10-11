@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RidePass — Voice-first credit passport</title>
+<meta name="description" content="Keke, okada and bus riders build a verified, signed repayment history by voice in English, Pidgin, Hausa, Yorùbá or Igbo.">
+<meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Voice-first credit passport</small></span></a>
+  <span class="spacer"></span>
+  <a class="btn secondary" href="/verify">Verify a passport</a>
+</div></header>
+<main>
+  <section class="hero">
+    <span class="eyebrow">Built on N-ATLAS · NAIC 2026</span>
+    <h1>Talk your money. Build your credit.</h1>
+    <p>Keke, okada and bus riders send a daily voice note. RidePass turns it into a verified, signed repayment history that lessors and lenders can trust — and shows how much a switch to electric would save.</p>
+    <div class="langs"><span>English</span><span>Pidgin</span><span>Hausa</span><span>Yorùbá</span><span>Igbo</span></div>
+    <svg class="wave" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg>
+  </section>
+
+  <div class="section-title">Choose your workspace</div>
+  <div class="tiles" id="tiles"></div>
+
+  <div class="section-title">How it works</div>
+  <div class="steps">
+    <div class="step"><h3>Speak</h3><p>“I made 14 thousand today, fuel 5,200, I paid owner 3,000” — in any of five languages.</p></div>
+    <div class="step"><h3>Confirm</h3><p>RidePass reads it back. Nothing is saved until the rider says it’s correct, and the owner confirms every payment.</p></div>
+    <div class="step"><h3>Share</h3><p>After 14 active days the rider gets an Ed25519-signed passport with an explainable, behaviour-only score.</p></div>
+  </div>
+
+  <footer class="footer">
+    <span>Phoenix Renewable Group</span><span>National AI Innovation Challenge 2026</span><span>Speech: NCAIR1 N-ATLAS ASR</span><span>Language: NCAIR1/N-ATLaS</span>
+  </footer>
+</main>
+<script src="/common.js"></script>
+<script>
+const tiles = [
+  ['/rider', 'mic', '', 'Rider web app', 'Log your day by voice and get your passport. Phone + PIN.'],
+  ['/agent', 'users', 'amber', 'Field agent', 'Onboard and record for riders without WhatsApp.'],
+  ['/dashboard', 'chart', 'blue', 'Lessors & lenders', 'Repayment portfolio, passports and share codes.'],
+  ['/verify', 'shield', '', 'Verify a passport', 'Check the signature, expiry and ledger integrity.'],
+];
+document.getElementById('tiles').innerHTML = tiles.map(([href, ic, tone, title, desc]) =>
+  `<a class="tile" href="${href}"><span class="icon-chip ${tone}">${RP.icon(ic)}</span><b>${title}</b><span class="muted">${desc}</span><span class="go">Open ${RP.icon('arrow').replace('<svg', '<svg width="15" height="15"')}</span></a>`).join('');
+</script>
+</body></html>

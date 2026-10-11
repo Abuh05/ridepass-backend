@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RidePass — Field Agent</title>
+<meta name="theme-color" content="#0b7a4b">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
+<style>
+  .agent-layout { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 900px) { .agent-layout { grid-template-columns: 340px 1fr; align-items: start; } .agent-layout aside { position: sticky; top: 80px; } }
+  .agent-layout .chat-shell { height: min(720px, calc(100dvh - 120px)); min-height: 460px; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; max-width: none; box-shadow: var(--shadow-sm); }
+  .chat-top { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .chat-top b { display: block; font-size: 14.5px; } .chat-top span { font-size: 12.5px; color: var(--muted); }
+  .chat-empty { flex: 1; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 24px; }
+  details { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Field agent</small></span></a>
+  <span class="spacer"></span>
+  <div class="who hidden" id="who"></div>
+  <button class="ghost hidden" id="logout" title="Sign out"></button>
+</div></header>
+<main>
+  <div class="center-wrap" id="keyCard" style="min-height:calc(100vh - 120px)">
+    <section class="card">
+      <div class="card-head"><div class="icon-chip amber" data-icon="key"></div><div><h2>Agent sign in</h2><p class="muted">Use the API key from your RidePass admin.</p></div></div>
+      <form id="keyForm">
+        <label for="key">Agent API key</label><input id="key" type="password" placeholder="rp_xxxxxxxx_…" autocomplete="off" required>
+        <p class="error" id="kerr"></p>
+        <div class="actions"><button class="block lg" id="saveKey" type="submit">Continue</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="agent-layout hidden" id="work">
+    <aside class="card" style="margin:0">
+      <div class="card-head"><div class="icon-chip" data-icon="user"></div><div><h2>Rider</h2><p class="muted">For riders without WhatsApp.</p></div></div>
+      <form id="riderForm">
+        <div class="field"><label for="rphone">Rider phone</label><input id="rphone" inputmode="tel" placeholder="08031234567" required></div>
+        <div class="field"><label for="rpin">Set rider PIN <span class="muted">(optional)</span></label><input id="rpin" inputmode="numeric" maxlength="6" placeholder="4–6 digits"></div>
+        <div class="actions"><button class="block" id="open" type="submit">Open rider</button></div>
+      </form>
+      <div class="notice warn">Read the consent message aloud in the rider's language and tap the rider's own answer. Never answer for them.</div>
+      <div class="notice" id="rerr"></div>
+      <details>
+        <summary>Verify an owner in person</summary>
+        <form id="ownerForm">
+          <label for="ophone">Owner phone</label><input id="ophone" inputmode="tel" placeholder="08031234567" required>
+          <div class="actions"><button class="secondary block" id="verifyOwner" type="submit">Mark owner verified</button></div>
+        </form>
+      </details>
+    </aside>
+
+    <section class="chat-shell" id="app">
+      <div class="chat-top"><span class="avatar" id="ravatar">?</span><div><b id="rname">No rider open</b><span id="rstate">Open a rider to start</span></div></div>
+      <div class="chat-empty" id="empty"><div><div class="icon-chip" style="margin:0 auto 10px" data-icon="inbox"></div>Enter a rider's phone number to start the conversation.</div></div>
+      <div class="chat hidden" id="chat"></div>
+      <div class="rec-status" id="hint"></div>
+      <div class="composer">
+        <button class="rec" id="rec" aria-label="Hold to record the rider" disabled></button>
+        <input id="text" placeholder="Type for the rider…" autocomplete="off" enterkeyhint="send" disabled>
+        <button class="send" id="send" aria-label="Send" disabled></button>
+      </div>
+    </section>
+  </div>
+</main>
+<script src="/common.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let key = RP.store.get('rp_agent'), phone = null, after = 0, poll;
+const H = () => ({ 'x-api-key': key });
+document.querySelectorAll('[data-icon]').forEach((el) => (el.innerHTML = RP.icon(el.dataset.icon)));
+$('rec').innerHTML = RP.icon('mic'); $('send').innerHTML = RP.icon('send'); $('logout').innerHTML = RP.icon('logout') + '<span>Sign out</span>';
+
+async function useKey() {
+  key = $('key').value.trim() || key; $('kerr').textContent = '';
+  try {
+    const me = await RP.api('/api/org/me', { headers: H() });
+    if (me.kind !== 'agent') throw new Error('This is a ' + me.kind + ' key — use the dashboard instead.');
+    RP.store.set('rp_agent', key);
+    $('who').innerHTML = `<b>${RP.esc(me.name)}</b>Field agent`; $('who').classList.remove('hidden'); $('logout').classList.remove('hidden');
+    $('keyCard').classList.add('hidden'); $('work').classList.remove('hidden');
+  } catch (e) { $('kerr').textContent = e.message; RP.store.set('rp_agent', null); }
+}
+function setEnabled(on) { for (const id of ['rec', 'text', 'send']) $(id).disabled = !on; }
+async function openRider() {
+  RP.note($('rerr'), '');
+  try {
+    phone = $('rphone').value.trim();
+    const r = await RP.api('/api/agent/rider', { method: 'POST', headers: H(), body: { phone, pin: $('rpin').value.trim() } });
+    $('chat').innerHTML = ''; after = 0;
+    $('empty').classList.add('hidden'); $('chat').classList.remove('hidden'); setEnabled(true);
+    $('rname').textContent = phone; $('ravatar').innerHTML = RP.icon('user');
+    $('rstate').textContent = r.state === 'new' ? 'New rider · onboarding' : 'Status: ' + r.state.replace(/_/g, ' ');
+    if ($('rpin').value.trim()) { RP.toast('Rider PIN set'); $('rpin').value = ''; }
+    clearInterval(poll); poll = setInterval(fetchOutbox, 1500);
+    if (r.state === 'new' || r.state === 'declined') await send('hi'); else fetchOutbox();
+  } catch (e) { RP.note($('rerr'), e.message, 'bad'); }
+}
+async function fetchOutbox() {
+  if (!phone) return;
+  try {
+    const msgs = await RP.api(`/api/agent/outbox?phone=${encodeURIComponent(phone)}&after=${after}`, { headers: H() });
+    for (const m of msgs) { after = m.id; RP.bubble($('chat'), m, 'in', (b) => send(b.title, b.id)); }
+  } catch (e) { if (e.status === 401) logout(); }
+}
+async function send(text, button) {
+  RP.bubble($('chat'), { text }, 'out');
+  try { await RP.api('/api/agent/message', { method: 'POST', headers: H(), body: { phone, text, button } }); RP.typing($('chat')); }
+  catch (e) { RP.toast('Not sent: ' + e.message); }
+}
+function logout() { clearInterval(poll); RP.store.set('rp_agent', null); location.reload(); }
+
+RP.holdToRecord($('rec'), $('hint'), async (blob, secs) => {
+  RP.bubble($('chat'), { text: '🎤 Rider voice note · ' + secs + 's' }, 'out');
+  try { await RP.api('/api/agent/voice?phone=' + encodeURIComponent(phone), { method: 'POST', raw: blob, headers: { ...H(), 'Content-Type': blob.type } }); RP.typing($('chat')); }
+  catch (e) { RP.toast('Not sent: ' + e.message); }
+}, 'Hold the mic while the rider speaks');
+$('keyForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('saveKey'), useKey); };
+$('riderForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('open'), openRider); };
+$('ownerForm').onsubmit = (e) => {
+  e.preventDefault();
+  RP.busy($('verifyOwner'), async () => {
+    try { await RP.api('/api/agent/verify-owner', { method: 'POST', headers: H(), body: { phone: $('ophone').value } }); RP.note($('rerr'), 'Owner verified ✓', 'ok'); $('ophone').value = ''; }
+    catch (e) { RP.note($('rerr'), e.message, 'bad'); }
+  });
+};
+const sendTyped = () => { const t = $('text').value.trim(); if (t && phone) { $('text').value = ''; send(t); } };
+$('send').onclick = sendTyped;
+$('text').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendTyped(); });
+$('logout').onclick = logout;
+if (key) useKey();
+</script>
+</body>
+</html>

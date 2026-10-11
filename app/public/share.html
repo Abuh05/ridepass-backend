@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RidePass Passport</title><meta name="robots" content="noindex"><meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Passport shared by the rider</small></span></a>
+  <span class="spacer"></span>
+  <button class="secondary sm hidden hide-sm" id="print">Print / save PDF</button>
+</div></header>
+<main class="narrow">
+  <div id="out"><div class="card"><div class="skeleton" style="width:35%;margin-bottom:14px"></div><div class="skeleton" style="width:65%;margin-bottom:14px"></div><div class="skeleton" style="width:50%"></div></div></div>
+  <p class="muted" style="text-align:center;margin-top:18px">Every view of this passport is logged and visible to the rider.</p>
+</main>
+<script src="/common.js"></script><script src="/passport-view.js"></script>
+<script>
+(async () => {
+  const code = location.pathname.split('/').pop();
+  try {
+    const p = await RP.api('/api/share/' + encodeURIComponent(code));
+    const v = await RP.api('/api/verify', { method: 'POST', body: p });
+    renderPassport(document.getElementById('out'), p.payload, v);
+    document.title = p.payload.rider.first_name + ' · RidePass Passport';
+    const pr = document.getElementById('print'); pr.classList.remove('hidden'); pr.onclick = () => print();
+  } catch (e) {
+    document.getElementById('out').innerHTML = `<div class="card" style="text-align:center"><div class="icon-chip amber" style="margin:0 auto 12px">${RP.icon('alert')}</div><h2>Passport unavailable</h2><p class="muted">${RP.esc(e.message)}</p><p class="muted">Ask the rider to send <b>PASSPORT</b> to RidePass for a fresh code.</p></div>`;
+  }
+})();
+</script>
+</body></html>

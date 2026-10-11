@@ -1,0 +1,36 @@
+# RidePass — Gaps & How the Build Closes Them
+
+Every weakness a judge, lender, regulator or rider could raise, and where it is handled in code.
+
+| # | Gap / risk | Mitigation in this build | Where |
+|---|---|---|---|
+| 1 | **Riders can lie about income** (self-reported data is cheap) | Two-sided attestation (owners registered by a lessor/agent count fully; self-declared owners count 80% to limit "friend as fake owner" collusion): every owner/lessor payment the rider logs is sent to the owner to confirm (WhatsApp button or signed web link). Passport shows *verified %* separately from self-reported totals. Anomaly engine flags outliers, duplicates, bulk back-dating, implausible fuel/income ratios. Score's "Verification" component is driven only by third-party confirmations. | `app/src/attest.ts`, `app/src/anomalies.ts` |
+| 2 | **Passport could be forged or edited** | Every ledger entry is SHA-256 hash-chained to the previous one. Passports are signed with Ed25519; `/verify` recomputes the chain head and checks the signature. Any edit breaks verification. | `app/src/ledger.ts`, `app/src/passport.ts` |
+| 3 | **Speech recognition errors** (noise, accents, Yoruba weakest at 2.69/5) | Nothing is saved without the rider confirming the read-back ("₦14,000 income, ₦5,200 fuel — correct?"). Independent multilingual number parser cross-checks every LLM amount against the transcript; mismatches are flagged. Correction rate is tracked per language as a live accuracy metric. Text input always accepted. | `app/src/nlu/`, `app/src/flow.ts` |
+| 4 | **ASR models only take 30 s of audio** | Model service chunks long audio (30 s windows with stride); app rejects notes > 2 min with a friendly prompt. | `model-service/app.py` |
+| 5 | **LLM returns bad JSON / hallucinated amounts** | Schema-constrained JSON decoding (vLLM `response_format: json_schema`), strict validation, amount-in-transcript check, rule-based fallback extractor. Every message records whether N-ATLAS or fallback handled it (integration evidence). | `app/src/nlu/extract.ts` |
+| 6 | **Consent & Nigeria Data Protection Act 2023** | Explicit, versioned consent captured before any data is stored; lenders see data only after the rider approves that specific lender (time-limited grant); every lender view is audit-logged; rider can say "my data" (export) or "delete my data" (erasure). Phone and name encrypted at rest (AES-256-GCM) with HMAC lookup. | `app/src/grants.ts`, `app/src/crypto.ts`, `docs/DATA_PROTECTION.md` |
+| 7 | **Discriminatory scoring** (N-ATLAS licence bans discriminatory profiling) | Score uses only behaviour (consistency, stability, repayments, verification, tenure, affordability). Language, gender, location, ethnicity never enter the model. Every score ships with plain-language reasons. | `app/src/scoring.ts` |
+| 8 | **Too little data to score** | No score until 14 active days; passport says "Building history (n/14 days)". | `scoring.ts` |
+| 9 | **WhatsApp 24-hour rule** (business-initiated messages need approved templates) | Reminders and owner attestations use named templates (listed in `docs/WHATSAPP_TEMPLATES.md`); if a template isn't approved yet, the owner gets a signed web link instead. | `app/src/attest.ts`, `app/src/reminders.ts` |
+| 10 | **Meta business verification delay / riders without WhatsApp** | Mobile web recorder (phone + PIN) and **Agent mode**: field agents at parks log on behalf of feature-phone riders. IVR/USSD is roadmap. | `app/public/rider.html`, `app/public/agent.html` |
+| 11 | **Low literacy** | Voice in, short text + optional pre-recorded native-speaker audio out; buttons instead of typing; numbers formatted ₦14,000. | `app/src/i18n.ts` |
+| 12 | **N-ATLAS 1,000 active-user licence cap** | Built-in guard: warns at 900, waitlists new sign-ups at 1,000; scale path = Awarri/FMCIDE commercial licence. | `app/src/flow.ts`, `app/src/users.ts` |
+| 13 | **GPU down / slow** | Webhook acknowledges instantly, work goes to a persistent SQLite job queue with retries and back-off; rider gets "received, processing". Duplicate WhatsApp deliveries are de-duplicated by message id. | `app/src/jobs.ts` |
+| 14 | **Webhook spoofing / abuse** | `X-Hub-Signature-256` verification, per-user rate limiting, audio size limits, hashed API keys for lenders/admins. | `app/src/channels/whatsapp.ts`, `app/src/flow.ts`, `app/src/auth.ts` |
+| 15 | **Proving real-world validation to judges** (≥ 50 interactions) | Every interaction is logged with language, latencies, model path, confirmed/corrected. Admin CSV export + metrics endpoint; in-chat 1–5 satisfaction survey after 5th log. | `app/src/interactions.ts`, `app/scripts/export.ts` |
+| 16 | **Why would anyone pay?** | Lessor portfolio dashboard (repayment calendar, missed-payment alerts), per-passport lender pulls, and the EV-switch calculator that pre-qualifies riders for Phoenix EV conversion financing. | `app/src/routes/org.ts`, `app/src/ev.ts` |
+| 17 | **Back-dating / bulk inflation before a loan application** | Entries allowed only for today/yesterday; bulk bursts flagged; passport shows logging regularity over time, not just totals. | `app/src/anomalies.ts` |
+| 18 | **Translations quality** | All rider-facing strings in one file per language for native-speaker review before pilot; English/Pidgin fallback. | `i18n.ts` |
+| 19 | **Rider spam / fatigue** | One evening reminder only, skipped if already logged; `STOP` turns reminders off. | `app/src/reminders.ts` |
+
+## Residual risks (what is still open)
+
+1. **Income itself is still mostly self-reported.** Owner confirmations verify *repayments*, not daily takings. Next steps:
+   - add opt-in bank or wallet statement matching (Mono / Okra-style account data);
+   - add trip counts from vehicle trackers on leased or EV-converted vehicles (the Phoenix EV fleet is ideal).
+2. **Operator-level tampering.** Someone with database access could rebuild the whole hash chain. The fix is to publish a daily Merkle root of all chain heads to an external log.
+3. **Feature-phone riders** depend on field agents today. An IVR line (for example via Africa's Talking voice) calling the same `/asr` pipeline is the roadmap item.
+4. **Score calibration.** Weights are expert-set, not trained on repayment outcomes, because no labelled defaults exist yet. Once lenders report outcomes, fit and publish a calibrated model and keep the explanations.
+5. **Translations** are first drafts until the native-speaker review is done.
+6. **Rule-parser benchmark bias.** The 34 benchmark cases were written by the builders. Only real pilot transcripts give a fair accuracy number.

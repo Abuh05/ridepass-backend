@@ -1,0 +1,34 @@
+{"lang":"en","text":"I made 14 thousand today, fuel 5,200, I paid owner 3,000","day":"today","entries":[["income",14000],["fuel",5200],["owner_payment",3000]]}
+{"lang":"en","text":"Today I collected 18k from passengers, bought fuel for 6000 and paid union ticket 500","day":"today","entries":[["income",18000],["fuel",6000],["levy",500]]}
+{"lang":"en","text":"yesterday I work 12k, 4000 for fuel, mechanic 2500","day":"yesterday","entries":[["income",12000],["fuel",4000],["repair",2500]]}
+{"lang":"en","text":"Income fifteen thousand five hundred, fuel five thousand, hire purchase three thousand five hundred","day":"today","entries":[["income",15500],["fuel",5000],["loan_repayment",3500]]}
+{"lang":"en","text":"I charged the battery for 1,800 and made 11,000","day":"today","entries":[["charging",1800],["income",11000]]}
+{"lang":"en","text":"Put 1000 in my ajo today, income 13k","day":"today","entries":[["savings",1000],["income",13000]]}
+{"lang":"en","text":"Bought new tyre 7500, no work today","day":"today","entries":[["repair",7500]]}
+{"lang":"en","text":"made 9k, fuel 3k, task force collected 1000","day":"today","entries":[["income",9000],["fuel",3000],["levy",1000]]}
+{"lang":"pcm","text":"I don make 14 thousand today, fuel na 5 thousand, I don pay oga 3 thousand","day":"today","entries":[["income",14000],["fuel",5000],["owner_payment",3000]]}
+{"lang":"pcm","text":"Today market no good, I make only 7k, fuel 3500","day":"today","entries":[["income",7000],["fuel",3500]]}
+{"lang":"pcm","text":"Yesterday I gain 16k, agbero collect 500, I pay delivery 3000","day":"yesterday","entries":[["income",16000],["levy",500],["owner_payment",3000]]}
+{"lang":"pcm","text":"I chop 1500, fuel 4k, work money 12k","day":"today","entries":[["other_expense",1500],["fuel",4000],["income",12000]]}
+{"lang":"pcm","text":"Mechanic collect 6000 today, I make 10 thousand","day":"today","entries":[["repair",6000],["income",10000]]}
+{"lang":"pcm","text":"I remit owner 3500, I make 17k, fuel 6k","day":"today","entries":[["owner_payment",3500],["income",17000],["fuel",6000]]}
+{"lang":"ha","text":"Yau na samu dubu goma sha huɗu, mai dubu biyar, na biya mai keke dubu uku","day":"today","entries":[["income",14000],["fuel",5000],["owner_payment",3000]]}
+{"lang":"ha","text":"Jiya na samu dubu goma sha biyu, mai dubu hudu, haraji dari biyar","day":"yesterday","entries":[["income",12000],["fuel",4000],["levy",500]]}
+{"lang":"ha","text":"Na samu naira dubu ashirin, na sayi mai dubu shida","day":"today","entries":[["income",20000],["fuel",6000]]}
+{"lang":"ha","text":"Gyara dubu uku, na samu dubu tara","day":"today","entries":[["repair",3000],["income",9000]]}
+{"lang":"ha","text":"Na saka dubu daya a adashe, na samu dubu goma sha biyar","day":"today","entries":[["savings",1000],["income",15000]]}
+{"lang":"ha","text":"Biyan bashi dubu uku da dari biyar, mai dubu biyar","day":"today","entries":[["loan_repayment",3500],["fuel",5000]]}
+{"lang":"ha","text":"Yau na samu dubu goma, na biya mai mota dubu biyu","day":"today","entries":[["income",10000],["owner_payment",2000]]}
+{"lang":"ha","text":"Kudin shiga dubu goma sha takwas, mai dubu bakwai","day":"today","entries":[["income",18000],["fuel",7000]]}
+{"lang":"yo","text":"Mo pa ẹgbẹ̀rún mẹ́rìnlá lónìí, epo ẹgbẹ̀rún márùn-ún, mo san ẹgbẹ̀rún mẹ́ta fún olówó ọkọ̀","day":"today","entries":[["income",14000],["fuel",5000],["owner_payment",3000]]}
+{"lang":"yo","text":"Mo pa ẹgbẹ̀rún mẹ́wàá lónìí, mo ra epo ẹgbẹ̀rún mẹ́ta","day":"today","entries":[["income",10000],["fuel",3000]]}
+{"lang":"yo","text":"Àná mo pa 12 thousand, epo 4 thousand","day":"yesterday","entries":[["income",12000],["fuel",4000]]}
+{"lang":"yo","text":"Mo san gbese ẹgbẹ̀rún méjì, mo pa ẹgbẹ̀rún mẹ́jọ","day":"today","entries":[["loan_repayment",2000],["income",8000]]}
+{"lang":"yo","text":"Àtúnṣe ẹgbẹ̀rún mẹ́ta, epo ẹgbẹ̀rún márùn-ún","day":"today","entries":[["repair",3000],["fuel",5000]]}
+{"lang":"yo","text":"Mo pa 15k, mo fi 1000 sí àjọ","day":"today","entries":[["income",15000],["savings",1000]]}
+{"lang":"ig","text":"Enwetara m puku iri na anọ taa, mmanụ puku ise, akwụrụ m onye nwe ụgbọ puku atọ","day":"today","entries":[["income",14000],["fuel",5000],["owner_payment",3000]]}
+{"lang":"ig","text":"Enwetara m puku iri na ise taa, mmanụ puku anọ, mmezi puku abụọ","day":"today","entries":[["income",15000],["fuel",4000],["repair",2000]]}
+{"lang":"ig","text":"Ụnyahụ enwetara m puku iri abụọ, mmanụ puku isii","day":"yesterday","entries":[["income",20000],["fuel",6000]]}
+{"lang":"ig","text":"Tiketi nari ise, enwetara m puku itoolu","day":"today","entries":[["levy",500],["income",9000]]}
+{"lang":"ig","text":"M tinyere puku otu na isusu, enwetara m puku iri na abụọ","day":"today","entries":[["savings",1000],["income",12000]]}
+{"lang":"ig","text":"Chaji puku abụọ, enwetara m puku iri","day":"today","entries":[["charging",2000],["income",10000]]}

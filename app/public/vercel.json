@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://ridepass-production.up.railway.app/api/:path*" },
+    { "source": "/webhook/:path*", "destination": "https://ridepass-production.up.railway.app/webhook/:path*" },
+    { "source": "/.well-known/:path*", "destination": "https://ridepass-production.up.railway.app/.well-known/:path*" },
+    { "source": "/health", "destination": "https://ridepass-production.up.railway.app/health" },
+    { "source": "/share/:code", "destination": "/share.html" },
+    { "source": "/a/:token", "destination": "/attest.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    }
+  ]
+}

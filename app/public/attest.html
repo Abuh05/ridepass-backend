@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirm payment · RidePass</title><meta name="robots" content="noindex"><meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Payment confirmation</small></span></a>
+</div></header>
+<main>
+  <div class="center-wrap"><div class="card" id="box"><div class="skeleton" style="width:60%;margin-bottom:14px"></div><div class="skeleton" style="width:85%;margin-bottom:14px"></div><div class="skeleton" style="height:44px"></div></div></div>
+</main>
+<script src="/common.js"></script>
+<script>
+const T = {
+  en: ['{r} says they paid you {a} on {d}. Is this correct?', 'Yes, correct', 'Not correct', 'Thank you. Your answer has been recorded.', 'This payment was already answered: '],
+  pcm: ['{r} talk say e pay you {a} on {d}. E correct?', 'Yes, e correct', 'E no correct', 'Thank you. We don record your answer.', 'Dem don answer this one before: '],
+  ha: ['{r} ya ce ya biya ka {a} ranar {d}. Daidai ne?', 'E, daidai ne', 'Ba daidai ba', 'Mun gode. An rubuta amsarka.', 'An riga an amsa wannan: '],
+  yo: ['{r} sọ pé òun san {a} fún yín ní {d}. Ṣé ó tọ̀nà?', 'Bẹ́ẹ̀ni, ó tọ̀nà', 'Kò tọ̀nà', 'A dúpẹ́. A ti kọ ìdáhùn yín sílẹ̀.', 'A ti dáhùn èyí tẹ́lẹ̀: '],
+  ig: ['{r} kwuru na ọ kwụrụ gị {a} n\'ụbọchị {d}. Ọ ziri ezi?', 'Ee, ọ ziri ezi', 'Ọ ziighi ezi', 'Daalụ. Edekọla azịza gị.', 'Azaala nke a: '],
+};
+const tok = location.pathname.split('/').pop(), box = document.getElementById('box');
+const done = (text, ok = true) => {
+  box.style.textAlign = 'center';
+  box.innerHTML = `<div class="success-mark"${ok ? '' : ' style="background:var(--warn-bg);color:var(--warn)"'}>${RP.icon(ok ? 'check' : 'alert')}</div><h2>${RP.esc(text)}</h2>`;
+};
+(async () => {
+  try {
+    const a = await RP.api('/api/attest/' + encodeURIComponent(tok)), t = T[a.lang] || T.en;
+    document.documentElement.lang = a.lang === 'pcm' ? 'en' : a.lang || 'en';
+    if (a.status !== 'pending') return done(t[4] + a.status, false);
+    box.innerHTML = `<div class="icon-chip">${RP.icon('wallet')}</div>
+      <p class="attest-q">${RP.esc(t[0].replace('{r}', a.rider).replace('{a}', a.amount).replace('{d}', a.day))}</p>
+      <div class="big-actions"><button class="lg" id="y">${RP.icon('check')}${RP.esc(t[1])}</button><button class="lg danger" id="n">${RP.icon('x')}${RP.esc(t[2])}</button></div>
+      <p class="muted" style="margin-top:16px">RidePass records your answer to help riders build a trusted repayment history.</p>`;
+    const answer = async (confirm, btn) => {
+      document.querySelectorAll('.big-actions button').forEach((b) => (b.disabled = true));
+      try { await RP.busy(btn, () => RP.api('/api/attest/' + encodeURIComponent(tok), { method: 'POST', body: { confirm } })); done(t[3]); }
+      catch (e) { document.querySelectorAll('.big-actions button').forEach((b) => (b.disabled = false)); RP.toast(e.message); }
+    };
+    const y = document.getElementById('y'), n = document.getElementById('n');
+    y.onclick = () => answer(true, y); n.onclick = () => answer(false, n);
+  } catch (e) {
+    box.style.textAlign = 'center';
+    box.innerHTML = `<div class="success-mark" style="background:var(--bad-bg);color:var(--bad)">${RP.icon('alert')}</div><h2>${RP.esc(e.message)}</h2><p class="muted">Ask the rider to send the payment again.</p>`;
+  }
+})();
+</script>
+</body></html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify a RidePass Passport</title><meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Passport verifier</small></span></a>
+</div></header>
+<main class="narrow">
+  <div class="page-head"><div><h1>Verify a passport</h1><p>Check the Ed25519 signature, expiry, and that the rider’s hash-chained ledger hasn’t been altered since issue.</p></div></div>
+  <form class="card" id="form">
+    <label for="json" style="margin-top:0">Passport JSON <span class="muted">(with <code>payload</code> and <code>signature</code>)</span></label>
+    <textarea id="json" rows="9" placeholder='{"payload": {...}, "signature": "..."}' spellcheck="false" required></textarea>
+    <div class="actions">
+      <button id="go" type="submit">Verify passport</button>
+      <button class="secondary" id="file" type="button">Load from file…</button>
+      <input type="file" id="fileIn" accept=".json,application/json" class="hidden">
+      <span class="spacer" style="flex:1"></span>
+      <a class="small" href="/.well-known/ridepass-key.pem">Public key (PEM)</a>
+    </div>
+    <div class="notice" id="err"></div>
+  </form>
+  <div id="out"></div>
+</main>
+<script src="/common.js"></script><script src="/passport-view.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+$('form').onsubmit = (e) => {
+  e.preventDefault(); RP.note($('err'), ''); $('out').innerHTML = '';
+  RP.busy($('go'), async () => {
+    let p;
+    try { p = JSON.parse($('json').value); } catch { return RP.note($('err'), 'That is not valid JSON. Paste the whole passport, including the outer { }.', 'bad'); }
+    if (!p || !p.payload || !p.signature) return RP.note($('err'), 'The JSON must contain “payload” and “signature”.', 'bad');
+    try {
+      const v = await RP.api('/api/verify', { method: 'POST', body: p });
+      renderPassport($('out'), p.payload, v);
+      if (v.note) RP.note($('err'), v.note, 'warn');
+      $('out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) { RP.note($('err'), e.message, 'bad'); }
+  });
+};
+$('file').onclick = () => $('fileIn').click();
+$('fileIn').onchange = async () => { const f = $('fileIn').files[0]; if (f) { $('json').value = await f.text(); $('form').requestSubmit(); } };
+</script>
+</body></html>

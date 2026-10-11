@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RidePass — Rider</title>
+<meta name="theme-color" content="#0b7a4b">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
+</head>
+<body class="chat-page">
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small id="who">Voice money diary</small></span></a>
+  <span class="spacer"></span>
+  <button class="ghost hidden" id="logout" title="Log out"></button>
+</div></header>
+<main>
+  <div id="login" class="center-wrap">
+    <section class="card">
+      <div class="card-head"><div class="icon-chip"></div><div><h2>Log in</h2><p class="muted">Use the phone number and PIN you set on WhatsApp (send <b>PIN</b>) or with a RidePass agent.</p></div></div>
+      <form id="loginForm">
+        <div class="field"><label for="phone">Phone number</label><input id="phone" inputmode="tel" placeholder="08031234567" autocomplete="tel" required></div>
+        <div class="field"><label for="pin">PIN</label><input id="pin" inputmode="numeric" type="password" maxlength="6" placeholder="••••" autocomplete="current-password" required></div>
+        <p class="error" id="err"></p>
+        <div class="actions"><button class="block lg" id="go" type="submit">Log in</button></div>
+      </form>
+    </section>
+  </div>
+  <section id="app" class="chat-shell hidden">
+    <div class="chat" id="chat" aria-live="polite"><span class="day-chip">Today</span></div>
+    <div class="quick" id="quick"></div>
+    <div class="rec-status" id="hint"></div>
+    <div class="composer">
+      <button class="rec" id="rec" title="Hold to record" aria-label="Hold to record a voice note"></button>
+      <input id="text" placeholder="Or type: income 14000 fuel 5200" autocomplete="off" enterkeyhint="send">
+      <button class="send" id="send" aria-label="Send"></button>
+    </div>
+  </section>
+</main>
+<script src="/common.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let token = RP.store.get('rp_rider'), after = 0, poll;
+const auth = () => ({ Authorization: 'Bearer ' + token });
+$('rec').innerHTML = RP.icon('mic'); $('send').innerHTML = RP.icon('send');
+$('logout').innerHTML = RP.icon('logout') + '<span>Log out</span>';
+document.querySelector('#login .icon-chip').innerHTML = RP.icon('phone');
+
+$('loginForm').onsubmit = (e) => {
+  e.preventDefault(); $('err').textContent = '';
+  RP.busy($('go'), async () => {
+    try {
+      const r = await RP.api('/api/rider/login', { method: 'POST', body: { phone: $('phone').value, pin: $('pin').value } });
+      token = r.token; RP.store.set('rp_rider', token); RP.store.set('rp_rider_name', r.name || '');
+      start();
+    } catch (e) { $('err').textContent = e.message; }
+  });
+};
+function start() {
+  const name = RP.store.get('rp_rider_name');
+  $('who').textContent = name ? 'Hello, ' + name : 'Voice money diary';
+  $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden');
+  clearInterval(poll); poll = setInterval(fetchOutbox, 1500); fetchOutbox();
+}
+function logout() { clearInterval(poll); RP.store.set('rp_rider', null); RP.store.set('rp_rider_name', null); location.reload(); }
+async function fetchOutbox() {
+  try {
+    const msgs = await RP.api('/api/rider/outbox?after=' + after, { headers: auth() });
+    for (const m of msgs) { after = m.id; RP.bubble($('chat'), m, 'in', (b) => sendButton(b)); }
+  } catch (e) { if (e.status === 401) logout(); }
+}
+async function post(path, opts, echo) {
+  RP.bubble($('chat'), { text: echo }, 'out');
+  try { await RP.api(path, { method: 'POST', headers: auth(), ...opts }); RP.typing($('chat')); }
+  catch (e) { if (e.status === 401) return logout(); RP.toast('Not sent: ' + e.message); }
+}
+function sendText(text) {
+  text = (text ?? $('text').value).trim(); if (!text) return;
+  $('text').value = '';
+  post('/api/rider/message', { body: { text } }, text);
+}
+const sendButton = (b) => post('/api/rider/message', { body: { button: b.id, text: b.title } }, b.title);
+
+for (const cmd of ['SUMMARY', 'PASSPORT', 'EV', 'HELP', 'LANGUAGE']) {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = cmd; b.onclick = () => sendText(cmd); $('quick').appendChild(b);
+}
+RP.holdToRecord($('rec'), $('hint'), (blob, secs) =>
+  post('/api/rider/voice', { raw: blob, headers: { ...auth(), 'Content-Type': blob.type } }, '🎤 Voice note · ' + secs + 's'),
+  'Hold the mic and say what you made and spent today');
+$('send').onclick = () => sendText();
+$('text').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendText(); });
+$('logout').onclick = logout;
+if (token) start();
+</script>
+</body>
+</html>
