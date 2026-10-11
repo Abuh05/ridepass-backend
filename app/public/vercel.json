@@ -6,8 +6,8 @@
     { "source": "/webhook/:path*", "destination": "https://ridepass-production.up.railway.app/webhook/:path*" },
     { "source": "/.well-known/:path*", "destination": "https://ridepass-production.up.railway.app/.well-known/:path*" },
     { "source": "/health", "destination": "https://ridepass-production.up.railway.app/health" },
-    { "source": "/share/:code", "destination": "/share.html" },
-    { "source": "/a/:token", "destination": "/attest.html" }
+    { "source": "/share/:code", "destination": "/share" },
+    { "source": "/a/:token", "destination": "/attest" }
   ],
   "headers": [
     {
