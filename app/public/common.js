@@ -58,9 +58,11 @@ window.RP = {
   note(el, text, kind = '') { el.className = 'notice' + (kind ? ' ' + kind : ''); el.textContent = text || ''; },
   /** Press-to-record voice notes (MediaRecorder → webm/opus or mp4 on iOS). */
   recorder() {
-    let rec, chunks = [], stream;
+    let rec, chunks = [], stream, ctx, timer;
     return {
       startedAt: 0,
+      level: 0,     // current input level 0..1
+      peak: 0,      // loudest level during this recording
       async start() {
         stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
         const type = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg'].find((t) => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
@@ -68,9 +70,22 @@ window.RP = {
         chunks = [];
         rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
         rec.start();
-        this.startedAt = Date.now();
+        this.startedAt = Date.now(); this.level = 0; this.peak = 0;
+        // Level meter, so a muted or wrong microphone is obvious before anything is sent.
+        try {
+          ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const an = ctx.createAnalyser(); an.fftSize = 1024;
+          ctx.createMediaStreamSource(stream).connect(an);
+          const buf = new Float32Array(an.fftSize);
+          timer = setInterval(() => {
+            an.getFloatTimeDomainData(buf);
+            let p = 0; for (const v of buf) p = Math.max(p, Math.abs(v));
+            this.level = p; this.peak = Math.max(this.peak, p);
+          }, 60);
+        } catch { this.peak = 1; } // no Web Audio: don't block sending
       },
       stop() {
+        clearInterval(timer); ctx?.close().catch(() => {}); ctx = null;
         return new Promise((resolve) => {
           if (!rec || rec.state === 'inactive') { stream?.getTracks().forEach((t) => t.stop()); return resolve(null); }
           rec.onstop = () => { stream.getTracks().forEach((t) => t.stop()); resolve(new Blob(chunks, { type: rec.mimeType || 'audio/webm' })); };
@@ -86,13 +101,26 @@ window.RP = {
   holdToRecord(btn, statusEl, onBlob, idleText) {
     const recorder = RP.recorder();
     let state = 'idle', released = false, clock;
-    const setStatus = (text, live) => { statusEl.textContent = text; statusEl.classList.toggle('live', !!live); };
+    const setStatus = (text, live, level) => {
+      statusEl.textContent = text; statusEl.classList.toggle('live', !!live);
+      if (level != null) {
+        const m = document.createElement('span'); m.className = 'lvl';
+        m.innerHTML = `<i style="width:${Math.min(100, Math.round(level * 160))}%"></i>`;
+        statusEl.appendChild(m);
+      }
+    };
     const finish = async () => {
       clearInterval(clock); btn.classList.remove('on'); state = 'idle';
       const blob = await recorder.stop();
       const secs = (Date.now() - recorder.startedAt) / 1000;
       setStatus(idleText);
       if (!blob || secs < 0.7) { if (blob) RP.toast('Hold the button while you speak'); return; }
+      if (recorder.peak < 0.02) {
+        setStatus('We could not hear you. Check your microphone is on, not muted, and is the one selected in your browser.');
+        statusEl.classList.add('warn');
+        return;
+      }
+      statusEl.classList.remove('warn');
       onBlob(blob, Math.max(1, Math.round(secs)));
     };
     btn.addEventListener('pointerdown', async (e) => {
@@ -101,7 +129,8 @@ window.RP = {
       try { btn.setPointerCapture?.(e.pointerId); } catch {}
       try { await recorder.start(); } catch { state = 'idle'; setStatus('Microphone permission is needed to record.', false); return; }
       state = 'recording'; btn.classList.add('on');
-      const tick = () => setStatus('Recording… ' + Math.floor((Date.now() - recorder.startedAt) / 1000) + 's · release to send', true);
+      statusEl.classList.remove('warn');
+      const tick = () => setStatus('Recording… ' + Math.floor((Date.now() - recorder.startedAt) / 1000) + 's · release to send', true, recorder.level);
       tick(); clock = setInterval(tick, 250);
       if (released) finish();
     });

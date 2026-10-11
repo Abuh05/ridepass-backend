@@ -244,6 +244,9 @@ body.chat-page > main { flex: 1; min-height: 0; width: 100%; padding: 0; display
 @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(192, 57, 43, .45); } 100% { box-shadow: 0 0 0 18px rgba(192, 57, 43, 0); } }
 .rec-status { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 6px 12px 0; background: var(--surface); min-height: 26px; }
 .rec-status.live { color: var(--bad); font-weight: 600; }
+.rec-status.warn { color: var(--bad); font-weight: 600; text-align: center; }
+.rec-status .lvl { width: 70px; height: 6px; border-radius: 99px; background: var(--bg-soft); overflow: hidden; }
+.rec-status .lvl i { display: block; height: 100%; background: var(--ok); border-radius: 99px; transition: width .06s linear; }
 .rec-status.live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--bad); animation: blink 1s infinite; }
 
 /* ---------- passport ---------- */

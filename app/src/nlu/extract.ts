@@ -99,7 +99,12 @@ export async function extract(transcript: string, opts: { mock?: boolean } = {})
     if (rules.entries.length && rules.unassigned.length === 0) {
       return { ...rules, path: 'natlas_guarded', llmMs: ms, lowConfidence: true, raw: text };
     }
-    return { ...parsed, path: 'natlas_guarded', llmMs: ms, lowConfidence: true, raw: text };
+    // Otherwise keep only the amounts the rider actually said; never show an invented amount.
+    const supported = parsed.entries.filter((e) => amountSupported(e.amount, transcript));
+    if (supported.length) {
+      return { ...parsed, entries: supported, path: 'natlas_guarded', llmMs: ms, lowConfidence: true, raw: text };
+    }
+    return { ...rules, path: 'natlas_guarded', llmMs: ms, lowConfidence: true, raw: text };
   } catch (e) {
     if (!(e instanceof ModelError)) throw e;
     return { ...rules, path: 'fallback', llmMs: 0, lowConfidence: true };

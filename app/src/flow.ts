@@ -12,7 +12,7 @@ import type { User } from './users.ts';
 import type { Inbound, OutMsg } from './channels/types.ts';
 import { send } from './channels/send.ts';
 import { downloadMedia } from './channels/whatsapp.ts';
-import { transcribe, ModelError } from './models.ts';
+import { transcribe, looksDegenerate, ModelError } from './models.ts';
 import { extract } from './nlu/extract.ts';
 import { extractAmounts } from './nlu/numbers.ts';
 import { detectCommand, REPAYMENT_TYPES, EXPENSE_TYPES, type EntryType } from './nlu/keywords.ts';
@@ -108,7 +108,7 @@ async function hear(ctx: Ctx, m: Inbound, attempt: number): Promise<string | nul
     updateInteraction(ctx.interactionId, { transcript: r.text, asrMs: r.ms, asrModel: r.model, audioSeconds: r.seconds, lang: ctx.user.lang });
     if (ctx.user.voice_research_opt_in && config.retainAudioForBenchmark && audio.length) saveForBenchmark(ctx, audio, mime, r.text);
     if (m.audioPath && existsSync(m.audioPath)) unlinkSync(m.audioPath);
-    if (!r.text.trim()) { reply(ctx, { text: tr(ctx, 'asr_failed') }); return null; }
+    if (!r.text.trim() || looksDegenerate(r.text)) { reply(ctx, { text: tr(ctx, 'asr_failed') }); return null; }
     return r.text;
   } catch (e) {
     const kind = (e as any)?.kind ?? ((e as any)?.tooLarge ? 'too_long' : 'unavailable');

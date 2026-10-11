@@ -31,7 +31,7 @@ const port = (stub.address() as any).port;
 process.env.LLM_BASE_URL = `http://localhost:${port}/v1`;
 process.env.ASR_URL = `http://localhost:${port}`;
 const { extract } = await import('../src/nlu/extract.ts');
-const { transcribe } = await import('../src/models.ts');
+const { transcribe, looksDegenerate } = await import('../src/models.ts');
 after(() => stub.close());
 
 test('N-ATLaS extraction uses constrained JSON and auth', async () => {
@@ -48,10 +48,21 @@ test('guard replaces amounts N-ATLaS invented', async () => {
   assert.deepEqual(r.entries, [{ type: 'income', amount: 14000 }]);
   assert.equal(r.lowConfidence, true);
 });
+test('guard drops invented amounts when the rider said no numbers', async () => {
+  const r = await extract('INVENT king sunny ade rhythms are the heartbeat of nigeria');
+  assert.equal(r.path, 'natlas_guarded');
+  assert.deepEqual(r.entries, [], 'an amount the rider never said must not be shown');
+});
 test('unparseable LLM output falls back to rules', async () => {
   const r = await extract('GARBAGE I made 14k');
   assert.equal(r.path, 'fallback');
   assert.deepEqual(r.entries, [{ type: 'income', amount: 14000 }]);
+});
+test('looping ASR output on silence is detected; real notes are not', () => {
+  assert.equal(looksDegenerate('ƙarar ' + 'ƙanar '.repeat(80)), true);
+  assert.equal(looksDegenerate('i made 14,000 naira today. fuel was 5,200. i paid the owner 3,000.'), false);
+  assert.equal(looksDegenerate('Jiya na samu dubu goma sha biyu, mai dubu hudu, haraji dari biyar'), false);
+  assert.equal(looksDegenerate('dubu dubu biyu'), false, 'short notes are never flagged');
 });
 test('ASR request carries language and audio', async () => {
   const r = await transcribe(Buffer.from('fake-ogg'), 'audio/ogg', 'yo');

@@ -13,6 +13,18 @@ async function withTimeout<T>(ms: number, fn: (signal: AbortSignal) => Promise<T
   try { return await fn(ac.signal); } finally { clearTimeout(timer); }
 }
 
+/**
+ * Whisper-style models loop on silence or noise ("ƙanar ƙanar ƙanar …"). Such a transcript means
+ * the rider wasn't heard, so ask them to record again instead of extracting from it.
+ */
+export function looksDegenerate(text: string): boolean {
+  const toks = text.toLowerCase().split(/[\s.,!?]+/).filter(Boolean);
+  if (toks.length < 8) return false;
+  let run = 1;
+  for (let i = 1; i < toks.length; i++) { run = toks[i] === toks[i - 1] ? run + 1 : 1; if (run >= 6) return true; }
+  return new Set(toks).size / toks.length < 0.25;
+}
+
 /** Transcribe with the official N-ATLAS ASR model for the language. */
 export async function transcribe(audio: Buffer, mime: string, asrLang: 'en' | 'ha' | 'yo' | 'ig', mockTranscript?: string): Promise<AsrResult> {
   if (config.modelMode === 'mock') {

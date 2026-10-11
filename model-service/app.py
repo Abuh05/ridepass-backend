@@ -99,6 +99,10 @@ async def asr(
         raise HTTPException(422, "audio too short")
     if seconds > MAX_SECONDS:
         raise HTTPException(413, f"audio longer than {MAX_SECONDS}s")
+    # Near-silent audio (muted or wrong microphone) makes Whisper models hallucinate text.
+    # Thresholds are deliberately low so quiet speech still passes.
+    if float(np.max(np.abs(audio))) < 0.02 or float(np.sqrt(np.mean(audio ** 2))) < 0.002:
+        raise HTTPException(422, "no speech detected (audio is near-silent)")
     pipe = get_pipe(language)
     t0 = time.time()
     # NCAIR ASR models are Whisper-small fine-tunes with a 30 s window -> chunk long notes.
