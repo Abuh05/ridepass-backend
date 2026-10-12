@@ -56,5 +56,5 @@ Track B (Innovation & Enterprise) · Problem Statement 2: Voice-First Access
 - [ ] `npm run export:interactions`: evidence contains **no** mock or demo data
 - [ ] Native speakers reviewed the Hausa, Yorùbá, Igbo and Pidgin strings in `app/src/i18n.ts`
 - [ ] Audio clips recorded for `consent`, `ask_name`, `ready` in each language (`app/public/audio/`)
-- [x] Privacy notice (`/privacy`) linked from the landing page, rider login and owner page. Contact email: set `CONTACT` in `app/public/common.js`
-- [ ] Repo made public or shared with the judges. Secret scan of the full history done 12 Oct: no `.env`, keys or tokens committed
+- [x] Privacy notice (`/privacy`) linked from the landing page, rider login and owner page. Contact email: creditpassport@gmail.com (`CONTACT` in `app/public/common.js`)
+- [x] Repo public at https://github.com/Abuh05/ridepass-backend. Secret scan of the full history done 12 Oct: no `.env`, keys or tokens committed

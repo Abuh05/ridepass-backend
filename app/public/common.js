@@ -24,7 +24,7 @@ const ICONS = {
 
 window.RP = {
   // Public contact / privacy address, shown on the privacy notice and the landing-page footer.
-  CONTACT: '',
+  CONTACT: 'creditpassport@gmail.com',
   icon: (name) => ICONS[name] || '',
   async api(path, { method = 'GET', body, headers = {}, raw } = {}) {
     const h = { ...headers };
