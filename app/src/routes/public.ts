@@ -53,6 +53,7 @@ export function publicRoutes(r: Router): void {
   r.get('/verify', page('verify.html'));
   r.get('/admin', page('admin.html'));
   r.get('/guide', page('guide.html'));
+  r.get('/privacy', page('privacy.html'));
   r.get('/share/:code', page('share.html'));
   r.get('/a/:token', page('attest.html'));
 

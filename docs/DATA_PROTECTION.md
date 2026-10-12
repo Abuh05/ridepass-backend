@@ -12,8 +12,8 @@
 | **Right to erasure** | `DELETE MY DATA` removes the profile, ledger, passports, grants and codes. Interaction rows keep only anonymous counters for aggregate metrics. |
 | **Right to withdraw consent** | `STOP SHARING` revokes all lender and lessor access immediately. |
 | **Automated decision-making** | The score is explainable, with components and plain-language reasons in every passport. It excludes protected characteristics. It is decision *support*: lenders are told to combine it with their own assessment. |
-| **Third-party data (owners)** | The owner's number comes from the rider. The owner's first message explains the purpose, and the owner's reply is recorded as their consent to confirmations. |
-| **Cross-border transfer** | Pick a hosting region and document it. For a pilot on RunPod or Railway, note the region in the privacy notice, and move to Nigerian or approved hosting when scaling. |
-| **Retention** | Default: the ledger is kept while the account is active. Riders inactive for 12 months are deleted (implement as a scheduled job before the commercial launch). |
+| **Third-party data (owners)** | The owner's number comes from the rider. The owner's first message explains the purpose, and the owner's reply is recorded as their consent to confirmations. Verified owners' PINs are stored only as scrypt hashes. |
+| **Cross-border transfer** | Pilot hosting is outside Nigeria (Railway US-West, Vercel, RunPod). This is stated in the public privacy notice (`/privacy`); move to Nigerian or NDPC-approved hosting before a commercial launch. |
+| **Retention** | The ledger is kept while the account is active, until the rider deletes it. Automatic deletion after 12 months of inactivity is **not built yet** (a scheduled job before commercial launch); the privacy notice does not promise it. |
 
 **N-ATLAS licence conditions honoured:** a 1,000 active end-user cap (built-in guard), no surveillance, no discriminatory profiling (the score is behaviour-only), and no disinformation.

@@ -12,6 +12,7 @@
     "keys": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/genkeys.ts",
     "simulate": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/simulate.ts",
     "bench:nlu": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/bench-nlu.ts",
+    "reset:activity": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/reset-activity.ts",
     "export:interactions": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/export.ts"
   },
   "comment": "Zero runtime dependencies on purpose: uses Node's built-in http, sqlite, crypto, fetch and test runner. Nothing to npm install."

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RidePass — Privacy notice</title>
+<meta name="description" content="How RidePass collects, protects and shares riders’ and vehicle owners’ data under the Nigeria Data Protection Act 2023.">
+<meta name="theme-color" content="#0b7a4b"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
+<style>
+  .pv h2 { font-size: 18px; margin: 26px 0 8px; }
+  .pv p, .pv li { font-size: 15px; color: var(--ink-2); }
+  .pv ul { padding-left: 20px; display: grid; gap: 6px; margin: 8px 0 0; }
+  .pv .kbd { font-family: var(--mono); font-size: 13px; background: var(--bg-soft); border: 1px solid var(--line-strong); padding: 1px 7px; border-radius: 6px; color: var(--ink); white-space: nowrap; }
+  .contact-box { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 12px; background: var(--brand-50); margin-top: 10px; }
+  .contact-box svg { width: 20px; height: 20px; color: var(--brand); flex: 0 0 20px; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2l2-6 4 12 3-9 2 3h3"/></svg></span><span>RidePass<small>Privacy notice</small></span></a>
+</div></header>
+<main class="narrow">
+  <div class="page-head"><div><h1>Privacy notice</h1><p>RidePass, operated by Phoenix Renewable Group · Nigeria Data Protection Act 2023</p></div></div>
+  <article class="card pv">
+    <p><b>In short:</b> RidePass keeps a record of the money you make and spend so you can build a credit passport. Nothing is stored until you agree. Nothing is shared without your permission. You can download or delete everything at any time.</p>
+
+    <h2>What we collect</h2>
+    <ul>
+      <li><b>Riders:</b> phone number, first name, language, vehicle type, who owns the vehicle, your daily payment to the owner, and the money amounts you log (income, fuel, payments, repairs and similar).</li>
+      <li><b>Voice notes:</b> turned into text, then <b>deleted</b>. We keep a recording only if you said “Yes” to helping improve Nigerian-language AI, and then without your name or number.</li>
+      <li><b>Vehicle owners:</b> phone number, your Yes/No answers to payment confirmations, and (if a field agent or your leasing company verified you) a PIN, stored only in scrambled form.</li>
+      <li>We do <b>not</b> collect NIN, BVN, address, photos or location.</li>
+    </ul>
+
+    <h2>Why we use it</h2>
+    <ul>
+      <li>To keep your money records and read them back to you for checking.</li>
+      <li>To calculate your RidePass score and issue your signed credit passport.</li>
+      <li>To show your owner or lender your records <b>only when you allow it</b>.</li>
+      <li>To estimate how much switching to an electric vehicle could save you.</li>
+    </ul>
+    <p>Our legal basis is your consent, asked in your language before anything is saved. Sharing with each organisation needs a separate “Allow”.</p>
+
+    <h2>Who can see your records</h2>
+    <ul>
+      <li><b>Lessors and lenders</b> you approve, or who receive a share code from you. Passport access lasts 30 days; share codes last 7 days.</li>
+      <li>Every time an organisation views your records it is logged, and you can see who and when with <span class="kbd">MY DATA</span>.</li>
+      <li>The score uses only your money behaviour. Language, gender, ethnicity, religion and location are never used. Lenders are told to use it alongside their own checks, not as the only reason for a decision.</li>
+    </ul>
+
+    <h2>How we protect it</h2>
+    <ul>
+      <li>Names and phone numbers are encrypted (AES-256). PINs and access keys are stored only as one-way hashes.</li>
+      <li>Your records are chained together so any change is detectable, and passports are digitally signed.</li>
+      <li>All connections use HTTPS.</li>
+    </ul>
+
+    <h2>Where it is stored</h2>
+    <p>During the pilot, the RidePass server and database run on Railway (United States, West region); the website is served by Vercel; speech recognition and the N-ATLAS language model run on a rented GPU (RunPod). This means your data is processed outside Nigeria. We will move to Nigerian or NDPC-approved hosting before a commercial launch.</p>
+
+    <h2>Your rights</h2>
+    <ul>
+      <li><span class="kbd">MY DATA</span>: download everything we hold about you, including who viewed it.</li>
+      <li><span class="kbd">STOP SHARING</span>: remove every lender’s and lessor’s access at once.</li>
+      <li><span class="kbd">DELETE MY DATA</span>: permanently erase your profile, records, passports and sharing. Only anonymous counts remain.</li>
+      <li><span class="kbd">STOP</span>: no more evening reminders.</li>
+    </ul>
+    <p>We keep your records while your account is active, until you delete them.</p>
+
+    <h2>Contact</h2>
+    <p>For questions, complaints, or to exercise your rights another way, contact the RidePass team at Phoenix Renewable Group:</p>
+    <div class="contact-box"><span id="mailIcon"></span><span id="contact"></span></div>
+    <p class="muted" style="margin-top:14px">You can also complain to the Nigeria Data Protection Commission (NDPC).</p>
+  </article>
+</main>
+<script src="/common.js"></script>
+<script>
+document.getElementById('mailIcon').innerHTML = RP.icon('inbox');
+document.getElementById('contact').innerHTML = RP.CONTACT
+  ? `<a href="mailto:${RP.esc(RP.CONTACT)}">${RP.esc(RP.CONTACT)}</a>`
+  : 'Ask your RidePass field agent.';
+</script>
+</body></html>

@@ -172,5 +172,6 @@
   document.querySelectorAll('.reveal').forEach((el) => (io ? io.observe(el) : el.classList.add('in')));
   if (!io) { animatePassport(); showStep(0, false); }
   document.querySelectorAll('[data-count]').forEach((el) => countUp(el, +el.dataset.count));
+  if (RP.CONTACT) $('footContact').innerHTML = `Contact: <a href="mailto:${E(RP.CONTACT)}">${E(RP.CONTACT)}</a>`;
   play(0);
 })();

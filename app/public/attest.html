@@ -52,7 +52,7 @@ const done = (text, ok = true, note = '') => {
         <p class="hint" style="margin-top:6px">${RP.esc(t[9])}</p></div>` : ''}
       <div class="big-actions"><button class="lg" id="y">${RP.icon('check')}${RP.esc(t[1])}</button><button class="lg danger" id="n">${RP.icon('x')}${RP.esc(t[2])}</button></div>
       <div class="notice bad" id="perr"></div>
-      <p class="muted" style="margin-top:16px">RidePass records your answer to help riders build a trusted repayment history.</p>`;
+      <p class="muted" style="margin-top:16px">RidePass records your answer to help riders build a trusted repayment history. <a href="/privacy">Privacy notice</a></p>`;
     const btns = () => document.querySelectorAll('.big-actions button');
     const answer = async (confirm, btn) => {
       RP.note(document.getElementById('perr'), '');

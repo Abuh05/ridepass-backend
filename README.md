@@ -7,7 +7,7 @@ Keke, okada and bus riders earn cash every day but have no records, so lenders c
 1. transcribed by the **official N-ATLAS ASR model** for that language (NCAIR1 Hausa/Yoruba/Igbo/Nigerian-English),
 2. turned into structured ledger entries by **N-ATLaS** (constrained JSON, cross-checked by a multilingual number parser),
 3. **read back to the rider for confirmation**. Nothing is saved without a "Correct",
-4. written to a **hash-chained ledger**, and every payment to the owner is **confirmed by the owner** (WhatsApp button or signed link).
+4. written to a **hash-chained ledger**, and every payment to the owner is **confirmed by the owner**: from their own WhatsApp number, or on a link with an owner PIN set in person, so a rider can never confirm their own payment.
 
 After 14 active days, the rider gets a **signed credit passport** (Ed25519) with an explainable, behaviour-only score. They share it with a lessor or lender by code or in-app approval. Lessors get a **daily repayment portfolio**, and Phoenix gets an **EV-switch estimate** built from the rider's own fuel spend.
 
@@ -24,14 +24,24 @@ RidePass app (Node 22, zero dependencies) ──► N-ATLAS model service (GPU)
 Lessor / lender dashboard · share-code page · public verifier
 ```
 
+## Live pilot
+
+| | |
+|---|---|
+| Website, rider app, dashboards | https://credit-passport-tau.vercel.app (`/rider`, `/agent`, `/dashboard`, `/verify`, `/admin`) |
+| Getting-started guide (every role) | https://credit-passport-tau.vercel.app/guide |
+| Privacy notice | https://credit-passport-tau.vercel.app/privacy |
+| API server | https://ridepass-production.up.railway.app (`/health`) |
+| Models | NCAIR1 ASR (en/ha/yo/ig) + NCAIR1/N-ATLaS on a RunPod A40 GPU |
+
 ## Repository
 
 | Path | What |
 |---|---|
 | `model-service/` | Python service for the GPU: N-ATLAS ASR API + vLLM for N-ATLaS, Dockerfile, `start.sh`, WER benchmark |
 | `app/src/` | Node/TypeScript app (runs on Node ≥ 22.13 with **no npm install**) |
-| `app/public/` | Rider web app, field-agent app, lessor/lender dashboard, share page, owner confirmation page, verifier |
-| `app/test/` | 26 automated tests (numbers in 5 languages, full conversation flows, tamper detection, N-ATLAS API contract) |
+| `app/public/` | Landing page, rider web app, field-agent app, lessor/lender dashboard, admin console, guide, privacy notice, share page, owner confirmation page, verifier |
+| `app/test/` | 35 automated tests (numbers in 5 languages, full conversation flows, tamper detection, N-ATLAS API contract, owner-PIN verification, hallucination guards) |
 | `app/bench/` | Labelled extraction benchmark (N-ATLaS vs rule baseline). Grow it with real pilot transcripts |
 | `docs/` | Gaps & mitigations, architecture, deployment, pilot protocol, data protection, WhatsApp templates, submission checklist |
 
@@ -39,7 +49,7 @@ Lessor / lender dashboard · share-code page · public verifier
 
 ```bash
 cd app
-npm test                              # 26 tests
+npm test                              # 35 tests
 npm run simulate                      # builds data/demo.db with synthetic riders + prints API keys
 DB_PATH=./data/demo.db MODEL_MODE=mock npm start
 # open http://localhost:8080  →  /dashboard  /rider  /agent  /verify

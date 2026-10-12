@@ -14,7 +14,7 @@ Track B (Innovation & Enterprise) · Problem Statement 2: Voice-First Access
 
 | # | Requirement | Our evidence |
 |---|---|---|
-| 1 | Working artefact | Live WhatsApp number + `https://<app>/` (rider web, agent, dashboard, verifier) + GitHub repo |
+| 1 | Working artefact | https://credit-passport-tau.vercel.app (rider web, agent, dashboard, verifier, admin, guide) + API at https://ridepass-production.up.railway.app + GitHub repo `Abuh05/ridepass-backend` (+ WhatsApp number once Meta verification completes) |
 | 2 | N-ATLAS integration evidence | `model-service/app.py` (4 NCAIR1 ASR models), `start.sh` (vLLM serving NCAIR1/N-ATLaS), `app/src/models.ts` and `nlu/extract.ts`, the contract test, and the `model_path` / `asr_model` columns in `evidence/interactions.csv` |
 | 3 | Real-world validation | `evidence/metrics.json` + `interactions.csv` from the pilot, WER per language, `bench:nlu` results, lender observer letter, rider testimonials |
 | 4 | Technical documentation | `README.md`, `docs/ARCHITECTURE.md`, `docs/DEPLOY.md`, `docs/GAPS_AND_MITIGATIONS.md`, `docs/DATA_PROTECTION.md` |
@@ -26,7 +26,7 @@ Track B (Innovation & Enterprise) · Problem Statement 2: Voice-First Access
 
 | Criterion | Our strongest proof |
 |---|---|
-| Working artefact & technical rigour | Real WhatsApp voice flow in 5 languages. 27 automated tests. Hash-chained ledger and Ed25519-signed passports with a public verifier. Persistent job queue with retries. Zero-dependency deployment. |
+| Working artefact & technical rigour | Real WhatsApp voice flow in 5 languages. 35 automated tests. Hash-chained ledger and Ed25519-signed passports with a public verifier. Persistent job queue with retries. Zero-dependency deployment. |
 | N-ATLAS integration | Official ASR for **all four** languages. N-ATLaS for structured extraction (schema-constrained) **and** as a money coach in the rider's language. Guard-rails measured, not hidden (`natlas` vs `natlas_guarded` vs `fallback` share reported). |
 | Real-world validation | 30 riders, 300+ voice interactions, first-pass accuracy by language, WER on native-speaker-labelled clips, owner confirmation rate, satisfaction score, lender feedback |
 | Impact potential | 93% of Nigerian workers are informal. Riders are locked out of fair finance. ELRA/NATOMORAS launched a leasing scheme in April 2026 that needs exactly this risk data. |
@@ -52,9 +52,9 @@ Track B (Innovation & Enterprise) · Problem Statement 2: Voice-First Access
 
 ## Final checks (10–11 Oct)
 
-- [ ] `MODEL_MODE=natlas` in production; `/api/admin/model-health` shows both models true
+- [ ] `MODEL_MODE=natlas` in production (done); start the RunPod GPU, then `/admin` → System status shows both models Reachable
 - [ ] `npm run export:interactions`: evidence contains **no** mock or demo data
 - [ ] Native speakers reviewed the Hausa, Yorùbá, Igbo and Pidgin strings in `app/src/i18n.ts`
 - [ ] Audio clips recorded for `consent`, `ask_name`, `ready` in each language (`app/public/audio/`)
-- [ ] Privacy notice link and contact email on the landing page
-- [ ] Repo made public or shared with the judges; `.env` is **not** committed
+- [x] Privacy notice (`/privacy`) linked from the landing page, rider login and owner page. Contact email: set `CONTACT` in `app/public/common.js`
+- [ ] Repo made public or shared with the judges. Secret scan of the full history done 12 Oct: no `.env`, keys or tokens committed

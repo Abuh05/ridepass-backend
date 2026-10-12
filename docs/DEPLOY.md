@@ -57,6 +57,8 @@ Docker alternative (own GPU server): run `docker compose up -d` from the repo ro
    curl -H "x-admin-key: $ADMIN_API_KEY" https://<app>/api/admin/model-health
    ```
    Both `asr` and `llm` should be `true`.
+6. **Optional: web pages on Vercel.** Push `app/public` to its own repo and import it on Vercel (Framework preset: Other, no build command). `app/public/vercel.json` forwards `/api`, `/webhook` and `/.well-known` to the Railway URL; change that URL if yours differs. Then set `PUBLIC_BASE_URL` on Railway to the Vercel address so owner and share links open there.
+7. **Remove test traffic before the pilot or a submission:** in the Railway service shell, run `npm run reset:activity -- --yes`. It writes a backup to `/app/data/backups/`, then clears riders, owners and their records, and keeps the organisations and their keys.
 
 ## 3. WhatsApp
 
@@ -70,7 +72,7 @@ Docker alternative (own GPU server): run `docker compose up -d` from the repo ro
 
 ## 4. Organisations
 
-Create one API key per organisation:
+Create one API key per organisation. The easy way is the **admin console** at `/admin`: sign in with `ADMIN_API_KEY`, then use “Onboard an organisation”. Or with curl:
 
 ```bash
 curl -X POST https://<app>/api/admin/orgs -H "x-admin-key: $ADMIN_API_KEY" -H "content-type: application/json" \
@@ -78,7 +80,9 @@ curl -X POST https://<app>/api/admin/orgs -H "x-admin-key: $ADMIN_API_KEY" -H "c
 # kinds: agent (field staff) · lessor (keke/okada leasing firms, fleet owners) · lender (MFBs, fintechs)
 ```
 
-Each key is shown once. Lessors and lenders use `/dashboard`. Agents use `/agent`.
+Each key is shown once. Lessors and lenders use `/dashboard`. Agents use `/agent`. The step-by-step onboarding for every role is at `/guide`.
+
+**Verify owners with a PIN.** Agents verify independent owners in person (“Verify an owner in person”), and lessors register their collection phone; both set a PIN the owner chooses. Only confirmations made with that PIN, or from the owner's own WhatsApp number, count as owner-confirmed.
 
 ## 5. Daily operations
 

@@ -27,7 +27,7 @@ WhatsApp webhook ──(HMAC verified, ack < 100 ms)──► jobs table (SQLite
 | `nlu/numbers.ts` | Money parser for English/Pidgin (scale after the number) and Hausa/Igbo/Yorùbá (scale before the number) |
 | `nlu/extract.ts` | N-ATLaS prompt, schema, validation, hallucination guard |
 | `ledger.ts` | Append-only hash chain, void entries, chain verification |
-| `attest.ts` | Owner confirmations by WhatsApp button, template, or signed link |
+| `attest.ts` | Owner confirmations by WhatsApp button, template, or link; owner PIN checks and lockout |
 | `scoring.ts` | 0–100 score: consistency 25, repayment 25, stability 20, verification 15, affordability 10, tenure 5, minus anomaly penalties |
 | `passport.ts` | Ed25519-signed passport; verification re-checks signature, expiry, and the ledger head |
 | `grants.ts` | Consents, per-organisation grants, share codes, access audit log |
@@ -38,9 +38,18 @@ WhatsApp webhook ──(HMAC verified, ack < 100 ms)──► jobs table (SQLite
 ## Trust model
 
 - **The rider cannot silently rewrite history.** Entries are append-only and hash-chained, and corrections are new `void` entries. A passport signs the chain head, so later edits make verification fail.
-- **The rider cannot inflate repayments** without the owner disputing them. Owners registered by a lessor or field agent carry full weight; self-declared owners carry 80%.
+- **The rider cannot confirm their own repayments.** A payment counts as owner-confirmed only when the owner provably answered: from the owner's own WhatsApp number (button replies from anyone else are ignored), or on the web link **with the owner's PIN**. Owners get that PIN when a field agent verifies them in person (ID and vehicle papers) or when their lessor registers the collection phone. Five wrong PINs lock it for 24 hours. A "Yes" on the link without a PIN is recorded but not counted; a "Not correct" always counts. Confirmations from owners who are not verified carry 80% weight.
+- **Silent recordings can't create entries.** The browser blocks notes where the microphone heard nothing, the model service rejects near-silent audio, looping (hallucinated) transcripts are treated as unheard, and any amount N-ATLaS returns that is not in the transcript is dropped.
 - **An operator with database access** could rebuild the whole chain. The mitigation for scale is to publish a daily Merkle root of all chain heads (for example to a public log) so that past states become externally auditable. This is on the roadmap.
 - **Lenders** only see what the rider approved, and every view is logged and shown to the rider in `MY DATA`.
+
+## Deployment (pilot)
+
+| Part | Where | Notes |
+|---|---|---|
+| Web pages | Vercel (`credit-passport-tau.vercel.app`) | Static files from `app/public`; `vercel.json` proxies `/api`, `/webhook` and `/.well-known` to Railway |
+| App + SQLite | Railway (`ridepass-production.up.railway.app`) | Dockerfile in `app/`, volume at `/app/data` |
+| N-ATLAS models | RunPod A40 (48 GB) | `model-service/start.sh`: NCAIR1 ASR on :9000, vLLM N-ATLaS on :8000, both behind `MODEL_SERVICE_TOKEN` |
 
 ## Scaling path
 
