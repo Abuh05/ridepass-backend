@@ -33,6 +33,10 @@ window.renderPassport = function (el, payload, verification, affordability) {
     [st.disputed_payments, 'disputed payments'],
     [st.flagged_entries, 'flagged days'],
   ];
+  // Older passports were issued before this breakdown existed.
+  if (st.recorded_voice_pct !== undefined) {
+    stats.push([`${st.recorded_voice_pct}% · ${st.recorded_typed_pct}% · ${st.recorded_with_agent_pct}%`, 'recorded by voice · typed · with a field agent']);
+  }
 
   const bars = scored ? Object.entries(s.components).map(([k, c]) => {
     const neg = c.points < 0, pct = neg ? Math.min(100, Math.abs(c.points) * 10) : c.max ? Math.max(0, Math.min(100, (c.points / c.max) * 100)) : 0;

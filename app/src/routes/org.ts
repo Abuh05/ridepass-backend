@@ -13,6 +13,7 @@ import { metrics } from '../interactions.ts';
 import { queueStats } from '../jobs.ts';
 import { modelHealth } from '../models.ts';
 import { sendReminders } from '../reminders.ts';
+import { createAnchor } from '../anchors.ts';
 
 function riderView(u: U.User) {
   return { first_name: U.nameOf(u).split(' ')[0], vehicle: u.vehicle, ownership: u.ownership, member_since: u.onboarded_day };
@@ -124,6 +125,7 @@ export function orgRoutes(r: Router): void {
   });
   r.get('/api/admin/model-health', async (q, s) => { requireAdmin(q); sendJson(s, 200, await modelHealth()); });
   r.post('/api/admin/reminders', (q, s) => { requireAdmin(q); sendJson(s, 200, sendReminders()); });
+  r.post('/api/admin/anchors', (q, s) => { requireAdmin(q); sendJson(s, 200, createAnchor()); });
   r.get('/api/admin/interactions.csv', (q, s) => {
     requireAdmin(q);
     const rows = all(`SELECT i.created_at, i.channel, i.direction, i.kind, i.lang, i.model_path, i.asr_model, i.audio_seconds, i.asr_ms, i.llm_ms, i.intent, i.outcome,

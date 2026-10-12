@@ -14,6 +14,7 @@ import { redeemShareCode, logAccess } from '../grants.ts';
 import { issuePassport, verifyPassport, latestPassport, type Passport } from '../passport.ts';
 import { attestationByToken, respondAttestation, pinLocked, pinAttemptsLeft, recordPinFailure, clearPinFailures, type AttestVia } from '../attest.ts';
 import { COUNTED_VIA } from '../scoring.ts';
+import { listAnchors, anchorProof } from '../anchors.ts';
 import { newSession, requireOrg, sessionUser } from '../auth.ts';
 import { liveEntries } from '../ledger.ts';
 
@@ -69,6 +70,13 @@ export function publicRoutes(r: Router): void {
     }
     logAccess(null, userId, 'share_code_view', { ua: String(q.headers['user-agent'] ?? '').slice(0, 120) });
     sendJson(s, 200, { payload: JSON.parse(p!.payload), signature: p!.signature });
+  });
+  // Daily ledger anchors (Merkle roots over all rider chain heads) and per-rider inclusion proofs.
+  r.get('/api/anchors', (_q, s) => sendJson(s, 200, listAnchors()));
+  r.get('/api/anchors/:day/proof/:ref', (q, s) => {
+    const p = anchorProof(q.params.day, q.params.ref);
+    if (!p) throw new HttpError(404, 'No anchor for that day, or that rider had no entries then.');
+    sendJson(s, 200, p);
   });
   r.post('/api/verify', (q, s) => {
     const { payload, signature } = q.json ?? {};

@@ -141,6 +141,30 @@ window.RP = {
     btn.addEventListener('contextmenu', (e) => e.preventDefault());
     setStatus(idleText);
   },
+  /**
+   * Read-aloud with the device's own speech voices. Set RP.speakLang to the rider's language; a
+   * Listen button appears only if the device has a matching voice (Pidgin uses English voices).
+   */
+  speakLang: null,
+  voiceFor(lang) {
+    if (!lang || !('speechSynthesis' in window)) return null;
+    const want = { en: ['en-NG', 'en'], pcm: ['en-NG', 'en'], ha: ['ha'], yo: ['yo'], ig: ['ig'] }[lang] || [];
+    const voices = speechSynthesis.getVoices();
+    for (const w of want) { const v = voices.find((x) => x.lang.toLowerCase().replace('_', '-').startsWith(w.toLowerCase())); if (v) return v; }
+    return null;
+  },
+  speak(text) {
+    const v = RP.voiceFor(RP.speakLang); if (!v) return;
+    const clean = String(text)
+      .replace(/https?:\/\/\S+/g, '')
+      .replace(/₦\s?([\d,]+)/g, '$1 naira')
+      .replace(/[*•]/g, '')
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '');
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(clean); u.lang = v.lang; u.rate = 0.9;
+    try { u.voice = v; } catch { /* some browsers only accept their own voice objects; lang is enough */ }
+    speechSynthesis.speak(u);
+  },
   /** Render a chat message (bot → left) with reply buttons. */
   bubble(container, msg, dir, onButton) {
     container.querySelector('.msg.typing')?.remove();
@@ -160,6 +184,12 @@ window.RP = {
     }
     const t = document.createElement('span');
     t.className = 't'; t.textContent = RP.time(msg.at);
+    if (dir === 'in' && RP.voiceFor(RP.speakLang)) {
+      const say = document.createElement('button');
+      say.type = 'button'; say.className = 'say'; say.textContent = '🔊 Listen'; say.setAttribute('aria-label', 'Read this message aloud');
+      say.onclick = () => RP.speak(msg.text);
+      t.prepend(say);
+    }
     div.appendChild(t);
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;

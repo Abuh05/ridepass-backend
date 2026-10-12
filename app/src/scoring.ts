@@ -22,6 +22,8 @@ export type ScoreResult = {
     avg_daily_income: number; avg_daily_expenses: number; avg_daily_repayment: number; avg_daily_net_before_repayment: number;
     total_repaid: number; total_repaid_confirmed: number; verified_repayment_pct: number; disputed_payments: number; flagged_entries: number;
     income_stability: number; member_since: string; tenure_days: number; owner_verified: boolean;
+    // How the window's entries were recorded (shown to lenders; not used in the score).
+    recorded_voice_pct: number; recorded_typed_pct: number; recorded_with_agent_pct: number;
   };
 };
 
@@ -63,6 +65,11 @@ export function computeScore(user: Row, today = lagosDay()): ScoreResult {
   const disputed = (one(`SELECT COUNT(*) c FROM attestations WHERE rider_id = ? AND status = 'disputed'`, user.id)?.c as number) ?? 0;
   const flagged = days.reduce((a, d) => a + d.flags, 0);
   const netBefore = active.map((d) => d.income - d.expenses);
+  // The entry source (voice | text | agent) is part of each entry's hash, so this breakdown is tamper-evident.
+  const bySource = new Map(all(`SELECT source, COUNT(*) n FROM entries WHERE user_id = ? AND type != 'void' AND day >= ? AND day <= ? GROUP BY source`, user.id, from, today)
+    .map((r) => [r.source as string, r.n as number]));
+  const recorded = [...bySource.values()].reduce((a, n) => a + n, 0);
+  const pct = (k: string) => (recorded ? Math.round(((bySource.get(k) ?? 0) / recorded) * 100) : 0);
   const stability = active.length >= 3 && mean(netBefore) > 0 ? clamp(1 - stdev(netBefore) / mean(netBefore)) : 0;
 
   const stats: ScoreResult['stats'] = {
@@ -82,6 +89,9 @@ export function computeScore(user: Row, today = lagosDay()): ScoreResult {
     member_since: memberSince,
     tenure_days: tenure,
     owner_verified: user.owner_id ? Boolean(one('SELECT verified_owner FROM users WHERE id = ?', user.owner_id)?.verified_owner) : false,
+    recorded_voice_pct: pct('voice'),
+    recorded_typed_pct: pct('text'),
+    recorded_with_agent_pct: pct('agent'),
   };
 
   const empty = { status: 'building' as const, score: null, band: null, components: {}, reasons: { positive: [], negative: [] }, stats };

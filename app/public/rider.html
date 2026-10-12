@@ -50,18 +50,20 @@ $('loginForm').onsubmit = (e) => {
   RP.busy($('go'), async () => {
     try {
       const r = await RP.api('/api/rider/login', { method: 'POST', body: { phone: $('phone').value, pin: $('pin').value } });
-      token = r.token; RP.store.set('rp_rider', token); RP.store.set('rp_rider_name', r.name || '');
+      token = r.token; RP.store.set('rp_rider', token); RP.store.set('rp_rider_name', r.name || ''); RP.store.set('rp_rider_lang', r.lang || 'en');
       start();
     } catch (e) { $('err').textContent = e.message; }
   });
 };
 function start() {
+  RP.speakLang = RP.store.get('rp_rider_lang') || 'en';
+  if ('speechSynthesis' in window) speechSynthesis.getVoices(); // voices load asynchronously on some phones
   const name = RP.store.get('rp_rider_name');
   $('who').textContent = name ? 'Hello, ' + name : 'Voice money diary';
   $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden');
   clearInterval(poll); poll = setInterval(fetchOutbox, 1500); fetchOutbox();
 }
-function logout() { clearInterval(poll); RP.store.set('rp_rider', null); RP.store.set('rp_rider_name', null); location.reload(); }
+function logout() { clearInterval(poll); RP.store.set('rp_rider', null); RP.store.set('rp_rider_name', null); RP.store.set('rp_rider_lang', null); location.reload(); }
 async function fetchOutbox() {
   try {
     const msgs = await RP.api('/api/rider/outbox?after=' + after, { headers: auth() });

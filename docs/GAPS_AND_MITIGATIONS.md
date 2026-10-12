@@ -25,13 +25,17 @@ Every weakness a judge, lender, regulator or rider could raise, and where it is 
 | 19 | **Rider spam / fatigue** | One evening reminder only, skipped if already logged; `STOP` turns reminders off. | `app/src/reminders.ts` |
 | 20 | **Silent or muted microphones make the ASR invent text** | Live mic level meter and a block on silent notes in the browser; near-silent audio rejected by the model service; looping transcripts treated as unheard; amounts not in the transcript dropped. | `app/public/common.js`, `model-service/app.py`, `app/src/models.ts`, `app/src/nlu/extract.ts` |
 | 21 | **Operating the pilot without engineers** | `/admin` console (create organisation keys, model status, metrics, CSV export), `/guide` step-by-step onboarding for every role, `/privacy` notice. | `app/public/admin.html`, `app/public/guide.html` |
+| 22 | **Someone other than the rider records** | Field-agent recordings are stamped `agent` with the agent's ID in the hash-chained ledger; the passport shows lenders the voice / typed / with-agent breakdown. Repayments only count when the owner confirms with their PIN or own WhatsApp number, so a stand-in cannot fake them. | `app/src/scoring.ts`, `app/public/passport-view.js` |
+| 23 | **Low-literacy riders and a text read-back** | Read-backs are text in the rider's language; the web app adds a **Listen** button that reads it aloud with the phone's own voice where one exists for the language (English/Pidgin on most phones). Field agents read it aloud otherwise. | `app/public/common.js` |
 
 ## Residual risks (what is still open)
 
 1. **Income itself is still mostly self-reported.** Owner confirmations verify *repayments*, not daily takings. Next steps:
    - add opt-in bank or wallet statement matching (Mono / Okra-style account data);
    - add trip counts from vehicle trackers on leased or EV-converted vehicles (the Phoenix EV fleet is ideal).
-2. **Operator-level tampering.** Someone with database access could rebuild the whole hash chain. The fix is to publish a daily Merkle root of all chain heads to an external log.
+2. **Operator-level tampering.** Partly closed: a daily Merkle root of all chain heads is published at `/api/anchors` with per-rider proofs. To close it fully, each root must also be posted to a log the operator does not control.
+7. **Spoken read-back in Hausa, Yorùbá and Igbo.** Phones rarely ship voices for these languages and N-ATLAS has no speech output, so the Listen button usually appears only for English and Pidgin. Next step: native-speaker clips for numbers and key words, or a Nigerian-language TTS model.
+8. **Speaker identity.** RidePass cannot tell who is speaking. This is deliberate (no biometric data); the protection is owner-confirmed repayments, not voice ID.
 3. **Feature-phone riders** depend on field agents today. An IVR line (for example via Africa's Talking voice) calling the same `/asr` pipeline is the roadmap item.
 4. **Score calibration.** Weights are expert-set, not trained on repayment outcomes, because no labelled defaults exist yet. Once lenders report outcomes, fit and publish a calibrated model and keep the explanations.
 5. **Translations** are first drafts until the native-speaker review is done.

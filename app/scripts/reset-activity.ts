@@ -13,7 +13,7 @@ const { db, all, one } = await import('../src/db.ts');
 const { config } = await import('../src/config.ts');
 
 const ACTIVITY = ['users', 'consents', 'entries', 'attestations', 'grants', 'access_log', 'share_codes', 'passports', 'interactions',
-  'jobs', 'web_outbox', 'web_sessions', 'feedback', 'kv', 'owner_pin_failures', 'ev_leads'];
+  'jobs', 'web_outbox', 'web_sessions', 'feedback', 'kv', 'owner_pin_failures', 'ev_leads', 'anchors'];
 
 const backupDir = join(config.dataDir, 'backups');
 mkdirSync(backupDir, { recursive: true });

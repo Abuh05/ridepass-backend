@@ -220,7 +220,9 @@ body.chat-page > main { flex: 1; min-height: 0; width: 100%; padding: 0; display
 @keyframes pop { from { opacity: 0; transform: translateY(6px); } }
 .msg.in { background: var(--bubble-in); align-self: flex-start; border-bottom-left-radius: 5px; }
 .msg.out { background: var(--bubble-out); align-self: flex-end; border-bottom-right-radius: 5px; }
-.msg .t { display: block; text-align: right; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.msg .t { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.msg .t .say { background: var(--brand-50); color: var(--brand); border: 0; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 600; margin-right: auto; }
+.msg .t .say:hover { background: var(--brand-100); }
 .msg .btns { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 4px; white-space: normal; }
 .msg .btns button { padding: 8px 14px; font-size: 14px; background: var(--surface); color: var(--brand); border: 1px solid var(--brand-100); border-radius: 99px; }
 .msg .btns button:hover { background: var(--brand-50); }
