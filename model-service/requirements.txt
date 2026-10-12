@@ -1,5 +1,6 @@
-# The Docker image (vllm/vllm-openai) already ships torch, transformers and vLLM.
-# For a bare-metal install run first:  pip install "vllm>=0.6.6"   (pulls torch + transformers)
+# ASR service dependencies. The Docker image (vllm/vllm-openai) already ships torch, transformers and vLLM.
+# For a bare-metal GPU install use requirements-gpu.txt (via ./setup.sh), which pins a working vLLM stack.
 fastapi>=0.110
 uvicorn[standard]>=0.29
 python-multipart>=0.0.9
+hf_transfer>=0.1.8

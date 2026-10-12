@@ -77,6 +77,7 @@
       <div class="actions" style="margin-top:0">
         <button class="secondary" id="reminders">Send evening reminders now</button>
         <button class="secondary" id="csv">Download interactions CSV</button>
+        <button class="secondary" id="dbBackup">Download database backup</button>
       </div>
       <div class="notice" id="toolMsg"></div>
     </section>
@@ -135,6 +136,8 @@ async function loadStatus(m) {
     <div class="status-row"><b>N-ATLaS language model</b>${ok(h.llm, 'Reachable', 'Unreachable')}</div>
     <div class="status-row"><b>Languages loaded</b><span class="langs">${loaded.length ? loaded.map((l) => `<span class="pill brand">${E(LANG[l] || l)}</span>`).join('') : '<span class="muted">none</span>'}</span></div>
     <div class="status-row"><b>Message queue</b><span class="muted">${q.queued ?? 0} waiting · ${q.running ?? 0} running · ${q.failed ?? 0} failed</span></div>
+    <div class="status-row"><b>WhatsApp</b>${m.whatsapp_connected ? '<span class="pill ok"><span class="dot"></span>Connected</span>' : '<span class="pill warn"><span class="dot"></span>Not connected · riders use web/agents; owners get links</span>'}</div>
+    <div class="status-row"><b>Last database backup</b>${m.last_backup ? `<span class="muted">${E(new Date(m.last_backup.created_at).toLocaleString())} · ${(m.last_backup.bytes / 1024).toFixed(0)} KB</span>` : '<span class="pill bad"><span class="dot"></span>None yet</span>'}</div>
     ${!h.asr || !h.llm ? '<div class="notice warn">The GPU may be stopped. Voice notes wait in the queue (up to about 6 hours) and are processed when it comes back. See the guide: “Starting the GPU”.</div>' : ''}`;
 }
 $('keyForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('signin'), signin); };
@@ -156,12 +159,20 @@ $('reminders').onclick = () => RP.busy($('reminders'), async () => {
   try { const r = await RP.api('/api/admin/reminders', { method: 'POST', headers: H() }); RP.note($('toolMsg'), `Reminders sent: ${r.sent ?? 0}. Skipped: ${r.skipped ?? 0} (already logged today, opted out, or outside WhatsApp’s 24-hour window).`, 'ok'); }
   catch (e) { RP.note($('toolMsg'), e.message, 'bad'); }
 });
+async function download(path, name) {
+  const res = await fetch(path, { headers: H() });
+  if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+  const url = URL.createObjectURL(await res.blob()), a = document.createElement('a');
+  a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+const today = () => new Date().toISOString().slice(0, 10);
 $('csv').onclick = () => RP.busy($('csv'), async () => {
+  try { await download('/api/admin/interactions.csv', `ridepass-interactions-${today()}.csv`); } catch (e) { RP.note($('toolMsg'), e.message, 'bad'); }
+});
+$('dbBackup').onclick = () => RP.busy($('dbBackup'), async () => {
   try {
-    const res = await fetch('/api/admin/interactions.csv', { headers: H() });
-    if (!res.ok) throw new Error('Download failed (' + res.status + ')');
-    const url = URL.createObjectURL(await res.blob()), a = document.createElement('a');
-    a.href = url; a.download = `ridepass-interactions-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    await download('/api/admin/backup', `ridepass-${today()}.db`);
+    RP.note($('toolMsg'), 'Backup downloaded. Keep it somewhere safe: names and phone numbers inside are encrypted and can only be read with DATA_KEY.', 'ok');
   } catch (e) { RP.note($('toolMsg'), e.message, 'bad'); }
 });
 $('refresh').onclick = () => RP.busy($('refresh'), async () => { try { await load(); RP.toast('Updated'); } catch (e) { RP.toast(e.message); } });

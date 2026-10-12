@@ -223,17 +223,16 @@
   <h2>Starting the GPU (RunPod)</h2>
   <p>Voice notes need the GPU. Text messages, dashboards and passports work without it. Voice notes sent while it is off wait in the queue for up to about 6 hours.</p>
   <ol class="steps-list">
-    <li>In RunPod → <b>Pods</b>, start the pod. Stopping and starting keeps the same pod ID, so nothing changes on Railway.</li>
-    <li>Open <b>Connect → Jupyter Notebook → Terminal</b> and paste (fill in the three values; never share them):
+    <li>In RunPod → <b>Pods</b>, start the pod. Check its Details show a GPU (e.g. <b>A40 ×1</b>): RunPod can restart a stopped pod without its GPU if someone else took it. Stopping and starting keeps the same pod ID, so nothing changes on Railway.</li>
+    <li>Open <b>Connect → Jupyter Notebook → Terminal</b> and paste (fill in the two tokens; never share them, and never paste these lines into a chat):
 <pre>cd /workspace &amp;&amp; rm -rf ridepass
+git clone https://github.com/Abuh05/ridepass-backend.git ridepass
+cd ridepass/model-service &amp;&amp; ./setup.sh
 export HF_TOKEN=&lt;Hugging Face token&gt;
 export MODEL_SERVICE_TOKEN=&lt;from ridepass-secrets.env&gt;
-git clone https://&lt;GitHub token&gt;@github.com/Abuh05/ridepass-backend.git ridepass
-cd ridepass/model-service
-apt-get update &amp;&amp; apt-get install -y ffmpeg
-pip install "vllm&gt;=0.6.6" -r requirements.txt
-nohup ./start.sh &gt; /workspace/models.log 2&gt;&amp;1 &amp;</pre></li>
-    <li>Wait 10–15 minutes, then check <a href="/admin">/admin</a> → System status shows both models <b>Reachable</b>.</li>
+./start.sh</pre>
+    <code>setup.sh</code> stops with a clear message if the pod has no GPU or too little disk, installs the tested versions, and checks the GPU works. <code>start.sh</code> runs both servers separately and restarts either one if it crashes.</li>
+    <li>Wait 10–15 minutes, then check <a href="/admin">/admin</a> → System status shows both models <b>Reachable</b>. Logs: <code>tail -f /workspace/vllm.log /workspace/asr.log</code>.</li>
     <li>When logging hours end, <b>Stop</b> the pod to stop paying for it.</li>
   </ol>
   <div class="callout tip"><span class="ci" data-icon="cpu"></span><span>If you <b>terminate</b> (delete) the pod, the new one has a different ID, and <code>ASR_URL</code> and <code>LLM_BASE_URL</code> on Railway must be updated.</span></div>

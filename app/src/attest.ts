@@ -5,7 +5,7 @@ import { sha256 } from './crypto.ts';
 import { naira, nowIso, token, uid } from './util.ts';
 import { t } from './i18n.ts';
 import { createUser, findByPhone, getUser, nameOf, phoneOf, type User } from './users.ts';
-import { send, withinWhatsAppWindow } from './channels/send.ts';
+import { send, withinWhatsAppWindow, whatsappConfigured } from './channels/send.ts';
 import { recordConsent } from './grants.ts';
 
 export function linkOwner(rider: User, ownerPhone: string): User {
@@ -28,6 +28,8 @@ export function requestAttestation(rider: User, entry: Row): { sentToOwner: bool
   const vars = { rider: nameOf(rider) || 'Your rider', amount: naira(entry.amount), day: entry.day, vehicle: vehicleWord(rider.vehicle) };
   const text = t(owner.lang, 'owner_attest', vars);
   const buttons = [{ id: `att:${id}:y`, title: t(owner.lang, 'owner_yes') }, { id: `att:${id}:n`, title: t(owner.lang, 'owner_no') }];
+  // Without WhatsApp credentials nothing can reach the owner, so the rider must forward the link.
+  if (!whatsappConfigured()) return { sentToOwner: false, link };
   if (owner.channel === 'whatsapp' && withinWhatsAppWindow(owner)) {
     send(owner, { text, buttons });
     return { sentToOwner: true, link };

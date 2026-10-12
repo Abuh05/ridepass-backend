@@ -1,0 +1,8 @@
+# Bare-metal GPU install (RunPod PyTorch template). Used by setup.sh.
+# Pinned to the combination verified on an A40 with an NVIDIA 570 driver (CUDA 12.8) on 12 Oct 2026.
+# vLLM 0.11.0 brings torch 2.8.0 built for CUDA 12.8, which also runs on newer drivers.
+# Newer vLLM releases are built for CUDA 13 and fail on CUDA 12.8 drivers ("driver too old").
+vllm==0.11.0
+transformers>=4.56,<5     # transformers 5.x breaks vLLM 0.11's tokenizer loader
+hf_transfer>=0.1.8        # RunPod templates set HF_HUB_ENABLE_HF_TRANSFER=1
+-r requirements.txt

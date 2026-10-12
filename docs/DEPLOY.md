@@ -14,22 +14,22 @@ There are two parts: the **model service**, which runs on a rented GPU, and the 
 
 ## 1. Model service on RunPod
 
-1. Deploy a GPU pod:
-   - **L40S or RTX A6000 (48 GB)** is recommended.
-   - An **RTX 4090 (24 GB)** also works, but needs `VLLM_QUANT=fp8`.
-   - Template: *RunPod PyTorch 2.x*. Container disk 60 GB. Expose HTTP ports **8000, 9000**.
-2. Open the pod's terminal and run:
+1. Deploy a **GPU** pod (not CPU):
+   - **A40, L40S or RTX A6000 (48 GB)** is recommended. An **RTX 4090 (24 GB)** also works with `VLLM_GPU_UTIL=0.75 VLLM_QUANT=fp8`.
+   - Template: *RunPod PyTorch*. **Container disk 80 GB.** Expose HTTP ports **8888, 8000, 9000** (one per box).
+   - When restarting a stopped pod, check it still has its GPU: RunPod can restart a pod without one if the GPU was taken.
+2. Open **Connect → Jupyter → Terminal** and run:
    ```bash
-   git clone <your repo> ridepass && cd ridepass/model-service
-   apt-get update && apt-get install -y ffmpeg
-   pip install "vllm>=0.6.6" -r requirements.txt
-   export HF_TOKEN=hf_xxx MODEL_SERVICE_TOKEN=<from npm run keys>
-   # 48 GB card:
-   ./start.sh
-   # 24 GB card:
-   VLLM_GPU_UTIL=0.75 VLLM_QUANT=fp8 ./start.sh
+   cd /workspace && git clone https://github.com/Abuh05/ridepass-backend.git ridepass
+   cd ridepass/model-service && ./setup.sh        # pinned install + GPU self-test, about 5 min
+   export HF_TOKEN=hf_xxx MODEL_SERVICE_TOKEN=<from your secrets file>
+   ./start.sh                                      # both servers, each restarts itself if it crashes
+   tail -f /workspace/vllm.log /workspace/asr.log
    ```
-   The first start downloads about 17 GB of weights, which takes 5–10 minutes.
+   `setup.sh` refuses to run without a GPU or with under 25 GB free, installs the pinned stack in
+   `requirements-gpu.txt` (vLLM 0.11.0 / PyTorch 2.8 for CUDA 12.8, transformers < 5), removes CUDA 13 leftovers,
+   and checks the GPU actually works. The first start downloads about 17 GB of weights (5–10 minutes).
+   The API key is passed to vLLM through `VLLM_API_KEY`, so it never appears in the logs.
 3. Your URLs are `https://<POD_ID>-8000.proxy.runpod.net/v1` (N-ATLaS) and `https://<POD_ID>-9000.proxy.runpod.net` (ASR).
 4. Check that it works:
    ```bash

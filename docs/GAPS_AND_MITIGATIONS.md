@@ -27,6 +27,9 @@ Every weakness a judge, lender, regulator or rider could raise, and where it is 
 | 21 | **Operating the pilot without engineers** | `/admin` console (create organisation keys, model status, metrics, CSV export), `/guide` step-by-step onboarding for every role, `/privacy` notice. | `app/public/admin.html`, `app/public/guide.html` |
 | 22 | **Someone other than the rider records** | Field-agent recordings are stamped `agent` with the agent's ID in the hash-chained ledger; the passport shows lenders the voice / typed / with-agent breakdown. Repayments only count when the owner confirms with their PIN or own WhatsApp number, so a stand-in cannot fake them. | `app/src/scoring.ts`, `app/public/passport-view.js` |
 | 23 | **Low-literacy riders and a text read-back** | Read-backs are text in the rider's language; the web app adds a **Listen** button that reads it aloud with the phone's own voice where one exists for the language (English/Pidgin on most phones). Field agents read it aloud otherwise. | `app/public/common.js` |
+| 24 | **GPU setup breaking on a fresh pod** (CUDA driver vs library versions) | Pinned stack in `requirements-gpu.txt`; `setup.sh` checks for a GPU, disk space and that cuDNN works; `start.sh` runs both servers independently with automatic restart. | `model-service/` |
+| 25 | **Data loss** | Daily database snapshot at 02:00 Lagos time (14 kept) and an admin download for off-server copies. | `app/src/backup.ts`, `/admin` |
+| 26 | **Messages that cannot be delivered** | Without WhatsApp credentials, messages to WhatsApp users are logged as `undelivered` (never counted as sent) and owners always get the rider-forwarded link. `/admin` shows the WhatsApp status. | `app/src/channels/send.ts` |
 
 ## Residual risks (what is still open)
 

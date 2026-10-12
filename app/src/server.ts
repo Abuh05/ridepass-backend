@@ -7,6 +7,7 @@ import { orgRoutes } from './routes/org.ts';
 import { startWorker } from './jobs.ts';
 import { startReminderClock } from './reminders.ts';
 import { startAnchorClock } from './anchors.ts';
+import { startBackupClock } from './backup.ts';
 import './flow.ts'; // registers the inbound job handler
 import './channels/send.ts'; // registers the WhatsApp send handler
 
@@ -22,6 +23,7 @@ server.listen(config.port, () => {
   startWorker();
   startReminderClock();
   startAnchorClock();
+  if (!process.env.NODE_TEST) startBackupClock();
   console.log(`RidePass listening on ${config.publicBaseUrl} (port ${config.port}, models: ${config.modelMode})`);
   if (config.modelMode === 'mock') console.warn('⚠️  MODEL_MODE=mock — N-ATLAS is NOT being called. Never run the pilot in mock mode.');
 });
