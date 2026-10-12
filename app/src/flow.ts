@@ -86,7 +86,10 @@ export async function handleInbound(m: Inbound, attempt = 1): Promise<void> {
   let text = m.text ?? '';
   if (m.kind === 'audio') {
     if (isOnboarding(user.state) && user.state !== 'await_name' && user.state !== 'await_remit' && user.state !== 'await_owner_phone') {
-      return continueOnboarding(ctx, ''); // re-ask the current onboarding question
+      // Choice steps (language, consent, vehicle, ownership, research) need a tap: consent must be explicit.
+      // Say so, then re-ask the question with its buttons, instead of silently repeating it.
+      if (user.state !== 'new' && user.state !== 'declined' && user.state !== 'erased') reply(ctx, { text: tr(ctx, 'tap_button') });
+      return continueOnboarding(ctx, '');
     }
     const heard = await hear(ctx, m, attempt);
     if (heard === null) return;

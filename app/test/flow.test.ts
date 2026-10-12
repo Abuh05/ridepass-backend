@@ -82,6 +82,19 @@ test('voice log → read-back → confirm → hash-chained ledger + owner attest
   assert.equal(inter.model_path, 'mock');
 });
 
+test('a voice note on a button step tells the rider to tap, then re-asks with the buttons', async () => {
+  await say('hi'); await tap('lang:pcm'); await tap('consent:y'); await say('Blessing');
+  assert.equal(rider().state, 'await_vehicle');
+  await voice('keke'); // what the stuck rider did: talking instead of tapping
+  const [hint, again] = outbox().slice(-2);
+  assert.match(hint.text, /Abeg press one of the buttons/);
+  assert.match(again.text, /motor/);
+  assert.deepEqual(again.buttons.map((b: any) => b.id), ['veh:keke', 'veh:okada', 'veh:bus']);
+  assert.equal(rider().state, 'await_vehicle', 'still waiting for the tap');
+  await tap('veh:keke');
+  assert.equal(rider().state, 'await_ownership');
+});
+
 test('rejecting the read-back saves nothing and is counted as a correction', async () => {
   await onboard('own');
   await voice('I made 14 thousand');
