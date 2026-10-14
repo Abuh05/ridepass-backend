@@ -43,7 +43,7 @@ Lessor / lender dashboard · share-code page · public verifier
 | `model-service/` | Python service for the GPU: N-ATLAS ASR API + vLLM for N-ATLaS, Dockerfile, `start.sh`, WER benchmark |
 | `app/src/` | Node/TypeScript app (runs on Node ≥ 22.13 with **no npm install**) |
 | `app/public/` | Landing page, rider web app, field-agent app, lessor/lender dashboard, admin console, guide, privacy notice, share page, owner confirmation page, verifier |
-| `app/test/` | 47 automated tests (numbers in 5 languages, full conversation flows, tamper detection, daily ledger anchors, N-ATLAS API contract, owner-PIN verification, hallucination guards) |
+| `app/test/` | 48 automated tests (numbers in 5 languages, full conversation flows, tamper detection, daily ledger anchors, N-ATLAS API contract, owner-PIN verification, hallucination guards) |
 | `app/bench/` | Labelled extraction benchmark (N-ATLaS vs rule baseline). Grow it with real pilot transcripts |
 | `docs/` | Gaps & mitigations, architecture, deployment, pilot protocol, data protection, WhatsApp templates, submission checklist |
 
@@ -51,7 +51,7 @@ Lessor / lender dashboard · share-code page · public verifier
 
 ```bash
 cd app
-npm test                              # 47 tests
+npm test                              # 48 tests
 npm run simulate                      # builds data/demo.db with synthetic riders + prints API keys
 DB_PATH=./data/demo.db MODEL_MODE=mock npm start
 # open http://localhost:8080  →  /dashboard  /rider  /agent  /verify

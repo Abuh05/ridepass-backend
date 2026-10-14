@@ -74,6 +74,16 @@ test('five wrong PINs lock the owner for 24 hours, even with the right PIN', asy
   assert.equal((await call('POST', `/api/attest/${tok}`, { confirm: true, pin: '7391' })).status, 200);
 });
 
+test('agents can read where a rider is in the conversation (for the progress view); others cannot', async () => {
+  assert.equal((await call('GET', '/api/agent/rider?phone=08031234567')).status, 401);
+  const r = await call('GET', '/api/agent/rider?phone=08031234567', undefined, { 'x-api-key': agentKey });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.consented, true);
+  assert.equal(r.json.vehicle, 'keke');
+  assert.ok('state' in r.json && 'lang' in r.json && 'first_name' in r.json);
+  assert.equal((await call('GET', '/api/agent/rider?phone=08000000001', undefined, { 'x-api-key': agentKey })).status, 404);
+});
+
 test('a rider phone cannot be registered as an owner, and owners cannot log in as riders', async () => {
   assert.equal((await call('POST', '/api/agent/verify-owner', { phone: '08031234567', pin: '5555' }, { 'x-api-key': agentKey })).status, 409);
   await verifyOwner('4826');

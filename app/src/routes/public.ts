@@ -172,6 +172,15 @@ export function publicRoutes(r: Router): void {
     if (pin) { if (!/^\d{4,6}$/.test(pin)) throw new HttpError(400, 'PIN must be 4-6 digits'); U.update(u.id, { pin_hash: hashSecret(pin) }); }
     sendJson(s, 200, { ok: true, state: u.state, channel: u.channel });
   });
+  // Where a rider is in the conversation, so the agent app can show progress and the next step.
+  r.get('/api/agent/rider', (q, s) => {
+    requireOrg(q, ['agent']);
+    const phone = normalisePhone(q.query.get('phone') ?? '');
+    const u = phone ? U.findByPhone(phone) : undefined;
+    if (!u) throw new HttpError(404, 'unknown rider');
+    sendJson(s, 200, { state: u.state, lang: u.lang, first_name: U.nameOf(u).split(' ')[0] || null,
+      consented: !!u.consent_at, has_pin: !!u.pin_hash, vehicle: u.vehicle, ownership: u.ownership, role: u.role });
+  });
   r.post('/api/agent/message', (q, s) => {
     const org = requireOrg(q, ['agent']);
     const phone = normalisePhone(String(q.json?.phone ?? ''));

@@ -7,13 +7,54 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
 <style>
   .agent-layout { display: grid; gap: 16px; grid-template-columns: 1fr; }
-  @media (min-width: 900px) { .agent-layout { grid-template-columns: 340px 1fr; align-items: start; } .agent-layout aside { position: sticky; top: 80px; } }
-  .agent-layout .chat-shell { height: min(720px, calc(100dvh - 120px)); min-height: 460px; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; max-width: none; box-shadow: var(--shadow-sm); }
-  .chat-top { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
-  .chat-top b { display: block; font-size: 14.5px; } .chat-top span { font-size: 12.5px; color: var(--muted); }
+  @media (min-width: 960px) { .agent-layout { grid-template-columns: 360px 1fr; align-items: start; } .side { position: sticky; top: 80px; } }
+  .side { display: grid; gap: 14px; }
+  .side .card { margin: 0; }
+  /* rider picker */
+  .rider-bar { display: none; align-items: center; gap: 12px; }
+  .side.collapsed #riderForm, .side.collapsed .recent { display: none; }
+  .side.collapsed .rider-bar { display: flex; }
+  .rider-bar b { display: block; font-size: 15px; } .rider-bar span { font-size: 12.5px; color: var(--muted); }
+  .recent { margin-top: 14px; }
+  .recent .label { margin: 0 0 8px; }
+  .recent-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .recent-list button { background: var(--bg-soft); color: var(--ink-2); border-radius: 99px; padding: 6px 12px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .recent-list button:hover { background: var(--brand-50); color: var(--brand); }
+  /* progress */
+  .steps-v { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 2px; }
+  .steps-v li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: center; padding: 6px 8px; border-radius: 10px; font-size: 14px; color: var(--muted); }
+  .steps-v .dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--bg-soft); color: var(--muted); }
+  .steps-v li.done { color: var(--ink-2); } .steps-v li.done .dot { background: var(--ok-bg); color: var(--ok-ink); }
+  .steps-v li.now { background: var(--brand-50); color: var(--ink); font-weight: 650; } .steps-v li.now .dot { background: var(--brand); color: var(--brand-ink); }
+  .steps-v li.skip { text-decoration: line-through; opacity: .6; }
+  .progress-bar { height: 6px; border-radius: 99px; background: var(--bg-soft); overflow: hidden; margin: 10px 0 2px; }
+  .progress-bar i { display: block; height: 100%; background: var(--brand); border-radius: 99px; transition: width .3s; }
+  /* what to do now */
+  .todo { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--brand-50), var(--surface)); border: 1px solid var(--brand-100); }
+  .todo .icon-chip { flex: 0 0 38px; }
+  .todo b { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--brand); margin-bottom: 2px; }
+  .todo p { margin: 0; font-size: 15px; color: var(--ink); line-height: 1.45; }
+  /* chat */
+  .agent-layout .chat-shell { height: min(760px, calc(100dvh - 110px)); min-height: 480px; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; max-width: none; box-shadow: var(--shadow-sm); }
+  .chat-top { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .chat-top .avatar { width: 42px; height: 42px; flex: 0 0 42px; font-size: 15px; }
+  .chat-top .who-r { flex: 1; min-width: 0; }
+  .chat-top b { display: block; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-top .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .chat-empty { flex: 1; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 24px; }
-  details { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
-  summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+  .chat-empty ol { text-align: left; margin: 14px auto 0; max-width: 320px; padding-left: 20px; display: grid; gap: 6px; font-size: 14px; }
+  .mobile-todo { display: none; }
+  details { margin-top: 0; }
+  summary { cursor: pointer; font-size: 14.5px; font-weight: 650; color: var(--ink-2); list-style: none; display: flex; align-items: center; gap: 10px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; margin-left: auto; font-size: 18px; color: var(--muted); }
+  details[open] summary::after { content: "–"; }
+  @media (max-width: 959px) {
+    .progress-card, .todo-card { display: none; }       /* on phones the step and guidance sit above the chat */
+    .mobile-todo { display: block; padding: 10px 14px; background: var(--brand-50); border-bottom: 1px solid var(--brand-100); font-size: 14px; }
+    .mobile-todo b { color: var(--brand); }
+    .agent-layout .chat-shell { height: calc(100dvh - 150px); min-height: 420px; }
+  }
 </style>
 </head>
 <body>
@@ -37,34 +78,64 @@
   </div>
 
   <div class="agent-layout hidden" id="work">
-    <aside class="card" style="margin:0">
-      <div class="card-head"><div class="icon-chip" data-icon="user"></div><div><h2>Rider</h2><p class="muted">For riders without WhatsApp.</p></div></div>
-      <form id="riderForm">
-        <div class="field"><label for="rphone">Rider phone</label><input id="rphone" inputmode="tel" placeholder="08031234567" required></div>
-        <div class="field"><label for="rpin">Set rider PIN <span class="muted">(optional)</span></label><input id="rpin" inputmode="numeric" maxlength="6" placeholder="4–6 digits"></div>
-        <div class="actions"><button class="block" id="open" type="submit">Open rider</button></div>
-      </form>
-      <div class="notice warn">Read the consent message aloud in the rider's language and tap the rider's own answer. Never answer for them.</div>
-      <div class="notice" id="rerr"></div>
-      <details>
-        <summary>Verify an owner in person</summary>
-        <form id="ownerForm">
-          <p class="hint" style="margin-top:8px">Only after you have seen the owner’s ID and proof they own the vehicle. Let the owner type a PIN they will remember: they need it to confirm payments.</p>
-          <label for="ophone">Owner phone</label><input id="ophone" inputmode="tel" placeholder="08031234567" required>
-          <label for="opin">Owner’s PIN (owner types it)</label><input id="opin" type="password" inputmode="numeric" maxlength="6" placeholder="4–6 digits" autocomplete="off" required>
-          <div class="actions"><button class="secondary block" id="verifyOwner" type="submit">Mark owner verified</button></div>
+    <div class="side" id="side">
+      <section class="card">
+        <div class="rider-bar">
+          <span class="avatar" id="barAvatar">?</span>
+          <div style="flex:1;min-width:0"><b id="barName">—</b><span id="barPhone"></span></div>
+          <button class="secondary sm" id="changeRider" type="button">Change rider</button>
+        </div>
+        <form id="riderForm">
+          <div class="card-head" style="margin-bottom:10px"><div class="icon-chip" data-icon="user"></div><div><h2>Open a rider</h2><p class="muted">New or returning. Riders without WhatsApp log through you.</p></div></div>
+          <div class="field"><label for="rphone">Rider’s phone number</label><input id="rphone" inputmode="tel" placeholder="08031234567" autocomplete="off" required></div>
+          <div class="field"><label for="rpin">Set a web PIN <span class="muted">(optional · the rider chooses 4–6 digits)</span></label><input id="rpin" inputmode="numeric" maxlength="6" placeholder="Leave empty to keep the current PIN" autocomplete="off"></div>
+          <div class="actions"><button class="block lg" id="open" type="submit">Open rider</button></div>
+          <div class="notice" id="rerr"></div>
         </form>
-      </details>
-    </aside>
+        <div class="recent hidden" id="recent"><p class="label">Recent riders on this device</p><div class="recent-list" id="recentList"></div></div>
+      </section>
+
+      <section class="card todo-card" id="todoCard" hidden>
+        <div class="todo"><span class="icon-chip" data-icon="alert" id="todoIcon"></span><div><b>What to do now</b><p id="todo"></p></div></div>
+      </section>
+
+      <section class="card progress-card" id="progressCard" hidden>
+        <div class="card-head" style="margin-bottom:4px"><div><h2>Onboarding progress</h2><p class="muted" id="progressText"></p></div></div>
+        <div class="progress-bar"><i id="progressBar"></i></div>
+        <ol class="steps-v" id="steps"></ol>
+      </section>
+
+      <section class="card">
+        <details>
+          <summary><span class="icon-chip" style="width:32px;height:32px;flex-basis:32px" data-icon="shield"></span>Verify a vehicle owner in person</summary>
+          <form id="ownerForm">
+            <p class="hint" style="margin-top:10px">Only after you have seen the owner’s ID and proof they own the vehicle. Hand the phone to the owner to type a PIN they will remember: they need it to confirm payments.</p>
+            <label for="ophone">Owner’s phone</label><input id="ophone" inputmode="tel" placeholder="08031234567" required>
+            <label for="opin">Owner’s PIN (the owner types it)</label><input id="opin" type="password" inputmode="numeric" maxlength="6" placeholder="4–6 digits" autocomplete="off" required>
+            <div class="actions"><button class="secondary block" id="verifyOwner" type="submit">Mark owner verified</button></div>
+            <div class="notice" id="oerr"></div>
+          </form>
+        </details>
+      </section>
+    </div>
 
     <section class="chat-shell" id="app">
-      <div class="chat-top"><span class="avatar" id="ravatar">?</span><div><b id="rname">No rider open</b><span id="rstate">Open a rider to start</span></div></div>
-      <div class="chat-empty" id="empty"><div><div class="icon-chip" style="margin:0 auto 10px" data-icon="inbox"></div>Enter a rider's phone number to start the conversation.</div></div>
+      <div class="chat-top">
+        <span class="avatar" id="ravatar">?</span>
+        <div class="who-r"><b id="rname">No rider open</b><div class="meta" id="rmeta"><span class="pill">Open a rider to start</span></div></div>
+      </div>
+      <div class="mobile-todo hidden" id="mobileTodo"></div>
+      <div class="chat-empty" id="empty"><div>
+        <div class="icon-chip" style="margin:0 auto 10px" data-icon="inbox"></div>
+        <b style="color:var(--ink)">Enter a rider’s phone number to begin</b>
+        <ol><li>New riders are taken through 8 short questions in their language.</li><li>The rider answers; you tap their choice, never your own.</li><li>Then hold the mic while they say today’s money.</li></ol>
+      </div></div>
       <div class="chat hidden" id="chat"></div>
+      <div class="quick hidden" id="quick"></div>
       <div class="rec-status" id="hint"></div>
       <div class="composer">
         <button class="rec" id="rec" aria-label="Hold to record the rider" disabled></button>
-        <input id="text" placeholder="Type for the rider…" autocomplete="off" enterkeyhint="send" disabled>
+        <input id="text" placeholder="Type the rider’s answer…" autocomplete="off" enterkeyhint="send" disabled>
         <button class="send" id="send" aria-label="Send" disabled></button>
       </div>
     </section>
@@ -72,11 +143,36 @@
 </main>
 <script src="/common.js"></script>
 <script>
-const $ = (id) => document.getElementById(id);
-let key = RP.store.get('rp_agent'), phone = null, after = 0, poll;
+const $ = (id) => document.getElementById(id), E = RP.esc;
+let key = RP.store.get('rp_agent'), phone = null, after = 0, poll, statusTimer, status = null;
 const H = () => ({ 'x-api-key': key });
 document.querySelectorAll('[data-icon]').forEach((el) => (el.innerHTML = RP.icon(el.dataset.icon)));
 $('rec').innerHTML = RP.icon('mic'); $('send').innerHTML = RP.icon('send'); $('logout').innerHTML = RP.icon('logout') + '<span>Sign out</span>';
+
+const LANG = { en: 'English', pcm: 'Pidgin', ha: 'Hausa', yo: 'Yorùbá', ig: 'Igbo' };
+// Onboarding steps in order, with what the agent should do at each one.
+const STEPS = [
+  ['await_lang', 'Language', 'Ask which language the rider prefers, then tap it.'],
+  ['await_consent', 'Consent', 'Read the consent message aloud in the rider’s language. Let the rider tap “I agree” or “No” themselves. Never answer for them.'],
+  ['await_name', 'First name', 'Type the rider’s first name and send it.'],
+  ['await_vehicle', 'Vehicle', 'Ask which vehicle they ride, then tap their answer.'],
+  ['await_ownership', 'Who owns it', 'Ask who owns the vehicle, then tap their answer.'],
+  ['await_owner_phone', 'Owner’s phone', 'Type the owner’s phone number, or 0 if they have no owner.'],
+  ['await_remit', 'Daily payment', 'Type how much the rider pays the owner each day, for example 3000.'],
+  ['await_research', 'Research question', 'Explain that keeping voice notes to improve Nigerian-language AI is optional. Tap the rider’s answer.'],
+];
+const OTHER = {
+  new: ['New rider', 'Starting…', 'warn'],
+  active: ['Ready to log money', 'Hold the green mic while the rider says today’s money: what they made, fuel, and what they paid the owner. Then read the amounts back to them.', 'ok'],
+  await_confirm: ['Waiting for the rider to confirm', 'Read the amounts aloud to the rider. Tap “Correct” only if the rider agrees; otherwise tap “Not correct” and record again.', 'warn'],
+  await_grant: ['Access request', 'A lessor or lender is asking to see this rider’s records. Explain it, and let the rider choose Allow or Refuse.', 'warn'],
+  await_delete: ['Deleting data?', 'The rider asked to delete everything. Make sure they understand it is permanent, then let them choose.', 'bad'],
+  await_pin: ['Setting a PIN', 'Hand the phone to the rider to type a 4-digit PIN they will remember.', 'warn'],
+  await_rating: ['Quick feedback', 'Ask how useful RidePass is (1–5) and send their answer.', 'warn'],
+  await_ev_lead: ['EV question', 'Ask if they want Phoenix to contact them about electric conversion, and send their answer.', 'warn'],
+  declined: ['Declined consent', 'The rider said no. Nothing was saved. Send “hi” only if they change their mind.', 'bad'],
+  erased: ['Data deleted', 'This rider deleted their data. Send “hi” to start again only if they want to.', 'bad'],
+};
 
 async function useKey() {
   key = $('key').value.trim() || key; $('kerr').textContent = '';
@@ -84,22 +180,93 @@ async function useKey() {
     const me = await RP.api('/api/org/me', { headers: H() });
     if (me.kind !== 'agent') throw new Error('This is a ' + me.kind + ' key — use the dashboard instead.');
     RP.store.set('rp_agent', key);
-    $('who').innerHTML = `<b>${RP.esc(me.name)}</b>Field agent`; $('who').classList.remove('hidden'); $('logout').classList.remove('hidden');
+    $('who').innerHTML = `<b>${E(me.name)}</b>Field agent`; $('who').classList.remove('hidden'); $('logout').classList.remove('hidden');
     $('keyCard').classList.add('hidden'); $('work').classList.remove('hidden');
+    renderRecent();
   } catch (e) { $('kerr').textContent = e.message; RP.store.set('rp_agent', null); }
 }
+
+// ---- recent riders (this browser tab only)
+const recent = () => { try { return JSON.parse(RP.store.get('rp_agent_recent') || '[]'); } catch { return []; } };
+function remember(p, name) {
+  const list = [{ p, name }, ...recent().filter((r) => r.p !== p)].slice(0, 6);
+  RP.store.set('rp_agent_recent', JSON.stringify(list)); renderRecent();
+}
+function renderRecent() {
+  const list = recent();
+  $('recent').classList.toggle('hidden', !list.length);
+  $('recentList').innerHTML = list.map((r) => `<button type="button" data-p="${E(r.p)}">${E(r.name ? r.name + ' · ' : '')}${E(r.p)}</button>`).join('');
+  $('recentList').querySelectorAll('button').forEach((b) => (b.onclick = () => { $('rphone').value = b.dataset.p; RP.busy($('open'), openRider); }));
+}
+
+// ---- status, progress and guidance
+async function refreshStatus() {
+  if (!phone) return;
+  try { status = await RP.api('/api/agent/rider?phone=' + encodeURIComponent(phone), { headers: H() }); renderStatus(); } catch {}
+}
+function renderStatus() {
+  const s = status; if (!s) return;
+  RP.speakLang = s.lang;
+  const name = s.first_name || 'New rider';
+  $('rname').textContent = name;
+  $('ravatar').textContent = RP.initials(s.first_name || '?');
+  $('barName').textContent = name; $('barPhone').textContent = phone + (s.lang ? ' · ' + (LANG[s.lang] || s.lang) : '');
+  $('barAvatar').textContent = RP.initials(s.first_name || '?');
+
+  const idx = STEPS.findIndex(([k]) => k === s.state);
+  const onboarding = idx >= 0 || s.state === 'new';
+  const ownerSkipped = s.ownership === 'own';
+  let label, todo, tone;
+  if (onboarding) {
+    const i = Math.max(0, idx), shown = STEPS.length - (ownerSkipped ? 2 : 0);
+    const pos = STEPS.slice(0, i + 1).filter(([k]) => !(ownerSkipped && (k === 'await_owner_phone' || k === 'await_remit'))).length;
+    label = `Onboarding · step ${pos} of ${shown}`; todo = STEPS[i][2]; tone = 'warn';
+    $('progressText').textContent = `${STEPS[i][1]} (step ${pos} of ${shown})`;
+    $('progressBar').style.width = Math.round(((pos - 1) / shown) * 100) + '%';
+    $('steps').innerHTML = STEPS.map(([k, t], j) => {
+      const skip = ownerSkipped && (k === 'await_owner_phone' || k === 'await_remit');
+      const cls = skip ? 'skip' : j < i ? 'done' : j === i ? 'now' : '';
+      return `<li class="${cls}"><span class="dot">${j < i && !skip ? '✓' : j + 1}</span>${E(t)}</li>`;
+    }).join('');
+    $('progressCard').hidden = false;
+  } else {
+    [label, todo, tone] = OTHER[s.state] || ['Active', OTHER.active[1], 'ok'];
+    if (s.consented && s.state !== 'erased') {
+      $('progressText').textContent = 'Onboarding complete'; $('progressBar').style.width = '100%';
+      $('steps').innerHTML = STEPS.map(([k, t]) => `<li class="done${s.ownership === 'own' && (k === 'await_owner_phone' || k === 'await_remit') ? ' skip' : ''}"><span class="dot">✓</span>${E(t)}</li>`).join('');
+      $('progressCard').hidden = false;
+    } else $('progressCard').hidden = true;
+  }
+  const pills = [`<span class="pill ${tone}"><span class="dot"></span>${E(label)}</span>`];
+  if (s.lang && s.state !== 'new' && s.state !== 'await_lang') pills.push(`<span class="pill brand">${E(LANG[s.lang] || s.lang)}</span>`);
+  if (s.vehicle) pills.push(`<span class="pill">${E(s.vehicle)}</span>`);
+  pills.push(`<span class="pill">${E(phone)}</span>`);
+  $('rmeta').innerHTML = pills.join('');
+  $('todo').textContent = todo; $('todoCard').hidden = false;
+  $('mobileTodo').innerHTML = `<b>Now:</b> ${E(todo)}`; $('mobileTodo').classList.remove('hidden');
+  const active = s.consented && !onboarding && s.state !== 'erased' && s.state !== 'declined';
+  $('quick').classList.toggle('hidden', !active);
+  $('text').placeholder = active ? 'Type amounts, e.g. income 14000 fuel 5200, or a word below' : 'Type the rider’s answer…';
+  if (s.first_name) remember(phone, s.first_name);
+}
+
+// ---- open a rider
 function setEnabled(on) { for (const id of ['rec', 'text', 'send']) $(id).disabled = !on; }
 async function openRider() {
   RP.note($('rerr'), '');
+  const p = $('rphone').value.trim();
+  if (!/^(\+?234|0)\d{10}$/.test(p.replace(/[\s-]/g, ''))) return RP.note($('rerr'), 'Enter a Nigerian phone number, e.g. 08031234567.', 'bad');
   try {
-    phone = $('rphone').value.trim();
-    const r = await RP.api('/api/agent/rider', { method: 'POST', headers: H(), body: { phone, pin: $('rpin').value.trim() } });
+    const pin = $('rpin').value.trim();
+    const r = await RP.api('/api/agent/rider', { method: 'POST', headers: H(), body: { phone: p, pin } });
+    phone = p; status = null;
     $('chat').innerHTML = ''; after = 0;
     $('empty').classList.add('hidden'); $('chat').classList.remove('hidden'); setEnabled(true);
-    $('rname').textContent = phone; $('ravatar').innerHTML = RP.icon('user');
-    $('rstate').textContent = r.state === 'new' ? 'New rider · onboarding' : 'Status: ' + r.state.replace(/_/g, ' ');
-    if ($('rpin').value.trim()) { RP.toast('Rider PIN set'); $('rpin').value = ''; }
+    if (pin) { RP.toast('Web PIN set for this rider'); $('rpin').value = ''; }
+    $('side').classList.add('collapsed'); remember(p);
     clearInterval(poll); poll = setInterval(fetchOutbox, 1500);
+    clearInterval(statusTimer); statusTimer = setInterval(refreshStatus, 5000);
+    await refreshStatus();
     if (r.state === 'new' || r.state === 'declined') await send('hi'); else fetchOutbox();
   } catch (e) { RP.note($('rerr'), e.message, 'bad'); }
 }
@@ -108,6 +275,7 @@ async function fetchOutbox() {
   try {
     const msgs = await RP.api(`/api/agent/outbox?phone=${encodeURIComponent(phone)}&after=${after}`, { headers: H() });
     for (const m of msgs) { after = m.id; RP.bubble($('chat'), m, 'in', (b) => send(b.title, b.id)); }
+    if (msgs.length) refreshStatus(); // a reply usually means the step changed
   } catch (e) { if (e.status === 401) logout(); }
 }
 async function send(text, button) {
@@ -115,8 +283,11 @@ async function send(text, button) {
   try { await RP.api('/api/agent/message', { method: 'POST', headers: H(), body: { phone, text, button } }); RP.typing($('chat')); }
   catch (e) { RP.toast('Not sent: ' + e.message); }
 }
-function logout() { clearInterval(poll); RP.store.set('rp_agent', null); location.reload(); }
+function logout() { clearInterval(poll); clearInterval(statusTimer); RP.store.set('rp_agent', null); location.reload(); }
 
+for (const cmd of ['SUMMARY', 'PASSPORT', 'EV', 'HELP', 'LANGUAGE']) {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = cmd; b.onclick = () => send(cmd); $('quick').appendChild(b);
+}
 RP.holdToRecord($('rec'), $('hint'), async (blob, secs) => {
   RP.bubble($('chat'), { text: '🎤 Rider voice note · ' + secs + 's' }, 'out');
   try { await RP.api('/api/agent/voice?phone=' + encodeURIComponent(phone), { method: 'POST', raw: blob, headers: { ...H(), 'Content-Type': blob.type } }); RP.typing($('chat')); }
@@ -124,11 +295,12 @@ RP.holdToRecord($('rec'), $('hint'), async (blob, secs) => {
 }, 'Hold the mic while the rider speaks');
 $('keyForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('saveKey'), useKey); };
 $('riderForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('open'), openRider); };
+$('changeRider').onclick = () => { $('side').classList.remove('collapsed'); $('rphone').value = ''; $('rphone').focus(); };
 $('ownerForm').onsubmit = (e) => {
   e.preventDefault();
   RP.busy($('verifyOwner'), async () => {
-    try { await RP.api('/api/agent/verify-owner', { method: 'POST', headers: H(), body: { phone: $('ophone').value, pin: $('opin').value } }); RP.note($('rerr'), 'Owner verified ✓ Their confirmations now need this PIN, and they count as verified.', 'ok'); $('ophone').value = ''; $('opin').value = ''; }
-    catch (e) { RP.note($('rerr'), e.message, 'bad'); }
+    try { await RP.api('/api/agent/verify-owner', { method: 'POST', headers: H(), body: { phone: $('ophone').value, pin: $('opin').value } }); RP.note($('oerr'), 'Owner verified ✓ Their confirmations now need this PIN and count as verified.', 'ok'); $('ophone').value = ''; $('opin').value = ''; }
+    catch (e) { RP.note($('oerr'), e.message, 'bad'); }
   });
 };
 const sendTyped = () => { const t = $('text').value.trim(); if (t && phone) { $('text').value = ''; send(t); } };
