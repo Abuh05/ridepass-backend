@@ -33,5 +33,5 @@ with your test rider's phone (Daily repayment tracking); approve it in the rider
 ## 3. Integrity and transparency
 - Verify any signed passport at https://credit-passport-tau.vercel.app/verify (public key: `/.well-known/ridepass-key.pem`).
 - Daily ledger anchors (Merkle roots): https://credit-passport-tau.vercel.app/api/anchors
-- Source code: https://github.com/Abuh05/ridepass-backend (44 automated tests: `cd app && npm test`).
+- Source code: https://github.com/Abuh05/ridepass-backend (46 automated tests: `cd app && npm test`).
 - Privacy notice: https://credit-passport-tau.vercel.app/privacy

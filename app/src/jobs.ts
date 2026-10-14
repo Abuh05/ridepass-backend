@@ -51,14 +51,17 @@ async function runJob(job: any): Promise<void> {
   }
 }
 
-function tick(): void {
+export function tick(): void {
   if (running >= config.workerConcurrency) return;
-  const due = all(`SELECT * FROM jobs WHERE status = 'queued' AND run_at <= ? ORDER BY run_at, created_at LIMIT 50`, Date.now());
+  const now = Date.now();
+  const due = all(`SELECT * FROM jobs WHERE status = 'queued' AND run_at <= ? ORDER BY run_at, created_at LIMIT 50`, now);
   for (const job of due) {
     if (running >= config.workerConcurrency) break;
-    // per-user ordering: never run two jobs for the same user at once, and never overtake an older one
+    // Per-user ordering: never run two jobs for the same user at once, and never overtake an older job
+    // that is due. An older job that is only waiting out a retry back-off (e.g. a voice note while the
+    // GPU is off overnight) does not hold up the rider's later messages (typed logs, SUMMARY, buttons).
     if (job.lock_key && (busyKeys.has(job.lock_key) ||
-      one(`SELECT 1 FROM jobs WHERE lock_key = ? AND status = 'queued' AND created_at < ? AND id != ?`, job.lock_key, job.created_at, job.id))) continue;
+      one(`SELECT 1 FROM jobs WHERE lock_key = ? AND status = 'queued' AND created_at < ? AND id != ? AND run_at <= ?`, job.lock_key, job.created_at, job.id, now))) continue;
     const claimed = run(`UPDATE jobs SET status = 'running' WHERE id = ? AND status = 'queued'`, job.id);
     if (Number(claimed.changes) === 1) void runJob(job);
   }
