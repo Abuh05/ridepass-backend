@@ -8,9 +8,17 @@ const handlers = new Map<string, Handler>();
 const busyKeys = new Set<string>();
 let running = 0;
 let timer: NodeJS.Timeout | null = null;
-// Voice notes wait out GPU downtime (pod stopped overnight, restarts): up to ~6 h of retries.
-const MAX_ATTEMPTS: Record<string, number> = { inbound: 40, wa_send: 6 };
 const backoffMs = (attempt: number) => Math.min(600_000, 2 ** attempt * 2000);
+/** Attempts needed for the back-off schedule to cover `hours` (exponential up to 10 min, then every 10 min). */
+export function attemptsFor(hours: number): number {
+  let elapsed = 0, n = 0;
+  while (elapsed < hours * 3600_000) elapsed += backoffMs(++n);
+  return n;
+}
+// Voice notes wait out GPU downtime (pod stopped overnight, restarts). Default 24 h, so a note sent
+// outside the GPU's daily hours is still answered the next morning. INBOUND_RETRY_HOURS to change.
+export const INBOUND_MAX_ATTEMPTS = attemptsFor(Number(process.env.INBOUND_RETRY_HOURS ?? 24));
+const MAX_ATTEMPTS: Record<string, number> = { inbound: INBOUND_MAX_ATTEMPTS, wa_send: 6 };
 
 export function registerHandler(kind: string, fn: Handler): void { handlers.set(kind, fn); }
 

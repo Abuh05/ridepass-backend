@@ -138,7 +138,7 @@ async function loadStatus(m) {
     <div class="status-row"><b>Message queue</b><span class="muted">${q.queued ?? 0} waiting · ${q.running ?? 0} running · ${q.failed ?? 0} failed</span></div>
     <div class="status-row"><b>WhatsApp</b>${m.whatsapp_connected ? '<span class="pill ok"><span class="dot"></span>Connected</span>' : '<span class="pill warn"><span class="dot"></span>Not connected · riders use web/agents; owners get links</span>'}</div>
     <div class="status-row"><b>Last database backup</b>${m.last_backup ? `<span class="muted">${E(new Date(m.last_backup.created_at).toLocaleString())} · ${(m.last_backup.bytes / 1024).toFixed(0)} KB</span>` : '<span class="pill bad"><span class="dot"></span>None yet</span>'}</div>
-    ${!h.asr || !h.llm ? '<div class="notice warn">The GPU may be stopped. Voice notes wait in the queue (up to about 6 hours) and are processed when it comes back. See the guide: “Starting the GPU”.</div>' : ''}`;
+    ${!h.asr || !h.llm ? '<div class="notice warn">The GPU may be stopped. Voice notes wait in the queue (up to 24 hours) and are processed when it comes back. See the guide: “Starting the GPU”.</div>' : ''}`;
 }
 $('keyForm').onsubmit = (e) => { e.preventDefault(); RP.busy($('signin'), signin); };
 $('orgForm').onsubmit = (e) => {

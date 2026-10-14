@@ -26,7 +26,7 @@ import { computeScore, dailyAggregates } from './scoring.ts';
 import { issuePassport } from './passport.ts';
 import { evEstimate } from './ev.ts';
 import { answerQuestion, weeklyTip } from './coach.ts';
-import { registerHandler } from './jobs.ts';
+import { registerHandler, INBOUND_MAX_ATTEMPTS } from './jobs.ts';
 
 type Ctx = { user: User; interactionId: string; source: 'voice' | 'text' | 'agent'; agentId?: string; isVoice: boolean };
 
@@ -119,7 +119,7 @@ async function hear(ctx: Ctx, m: Inbound, attempt: number): Promise<string | nul
     const done = (key: string) => { reply(ctx, { text: tr(ctx, key) }); if (m.audioPath && existsSync(m.audioPath)) unlinkSync(m.audioPath); return null; };
     if (kind === 'too_long') return done('too_long');
     if (kind === 'bad_audio') return done('asr_failed');
-    if (attempt >= 40) return done('asr_failed');
+    if (attempt >= INBOUND_MAX_ATTEMPTS) return done('asr_failed');
     if (attempt === 2) reply(ctx, { text: tr(ctx, 'delayed') }); // tell the rider once; the note is safe in the queue
     throw e; // retried by the job queue with back-off (GPU restarting / pod stopped)
   }
