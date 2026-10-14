@@ -55,7 +55,9 @@ export async function handleInbound(m: Inbound, attempt = 1): Promise<void> {
   const phone = normalisePhone(m.from);
   if (!phone) return;
   let user = U.findOrCreate(phone, m.channel);
-  if (user.channel !== m.channel && user.consent_at) U.update(user.id, { channel: m.channel });
+  // Reply on the channel the person last used. This also covers someone who already exists as a vehicle
+  // owner (WhatsApp, no rider consent yet) being onboarded as a rider through the web or a field agent.
+  if (user.channel !== m.channel) U.update(user.id, { channel: m.channel });
   U.update(user.id, { last_inbound_at: nowIso() });
   user = fresh(user.id);
 

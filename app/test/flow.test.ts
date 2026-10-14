@@ -8,7 +8,7 @@ import * as U from '../src/users.ts';
 import { appendEntries, verifyChain, liveEntries } from '../src/ledger.ts';
 import { computeScore, affordability } from '../src/scoring.ts';
 import { issuePassport, verifyPassport } from '../src/passport.ts';
-import { attestationByToken, respondAttestation } from '../src/attest.ts';
+import { attestationByToken, respondAttestation, linkOwner } from '../src/attest.ts';
 import { redeemShareCode } from '../src/grants.ts';
 import { addDays, lagosDay } from '../src/util.ts';
 import { config } from '../src/config.ts';
@@ -80,6 +80,19 @@ test('voice log → read-back → confirm → hash-chained ledger + owner attest
   const inter = one(`SELECT * FROM interactions WHERE kind = 'audio' AND direction = 'in'`)!;
   assert.equal(inter.outcome, 'confirmed');
   assert.equal(inter.model_path, 'mock');
+});
+
+test('someone who already exists as a vehicle owner can be onboarded as a rider on the web', async () => {
+  // 08099990000 was entered as an owner by another rider (WhatsApp account, no rider consent).
+  const other = U.createUser('2348031112222', { channel: 'web' });
+  linkOwner(other, '2348099990000');
+  assert.equal(U.findByPhone('2348099990000')!.channel, 'whatsapp');
+  await say('hi', OWNER); // a field agent opens them as a rider in the web app
+  const menu = last(OWNER);
+  assert.ok(menu, 'the reply reaches the web chat instead of undelivered WhatsApp');
+  assert.match(menu.text, /Choose your language/);
+  await tap('lang:en', OWNER); await tap('consent:y', OWNER);
+  assert.equal(U.findByPhone('2348099990000')!.role, 'rider');
 });
 
 test('a voice note on a button step tells the rider to tap, then re-asks with the buttons', async () => {
