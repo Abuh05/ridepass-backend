@@ -118,8 +118,17 @@ export function orgRoutes(r: Router): void {
     requireAdmin(q);
     // Keys are stored hashed and can't be shown again; the prefix lets an admin match a key to its org.
     sendJson(s, 200, all(`SELECT o.id, o.name, o.kind, o.key_prefix, o.created_at,
-      (SELECT COUNT(*) FROM grants g WHERE g.org_id = o.id AND g.status = 'granted') AS active_grants
+      (SELECT COUNT(*) FROM grants g WHERE g.org_id = o.id AND g.status = 'granted') AS active_grants,
+      (SELECT MAX(a.at) FROM org_activity a WHERE a.org_id = o.id AND a.ok = 1) AS last_used_at,
+      (SELECT COUNT(*) FROM org_activity a WHERE a.org_id = o.id AND a.action = 'Signed in') AS sign_ins,
+      (SELECT COUNT(*) FROM org_activity a WHERE a.org_id = o.id AND a.ok = 1 AND a.action <> 'Signed in') AS actions
       FROM orgs o ORDER BY o.created_at DESC`));
+  });
+  // Latest uses of org keys (sign-ins, actions, rejected keys), newest first.
+  r.get('/api/admin/activity', (q, s) => {
+    requireAdmin(q);
+    sendJson(s, 200, all(`SELECT a.at, a.action, a.ok, a.ip, a.org_id, o.name org, o.kind FROM org_activity a JOIN orgs o ON o.id = a.org_id
+      ORDER BY a.id DESC LIMIT 300`));
   });
   r.get('/api/admin/metrics', async (q, s) => {
     requireAdmin(q);

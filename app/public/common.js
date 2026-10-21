@@ -25,6 +25,8 @@ const ICONS = {
 window.RP = {
   // Public contact / privacy address, shown on the privacy notice and the landing-page footer.
   CONTACT: 'creditpassport@gmail.com',
+  // Help address for organisations and the evaluation panel, shown under the agent app and dashboard.
+  SUPPORT: 'abuhsolo05@gmail.com',
   icon: (name) => ICONS[name] || '',
   async api(path, { method = 'GET', body, headers = {}, raw } = {}) {
     const h = { ...headers };
@@ -202,3 +204,9 @@ window.RP = {
     clearTimeout(container._typing); container._typing = setTimeout(() => d.remove(), 20000);
   },
 };
+
+// Pages with a #support line (agent app, dashboard) show where to get help.
+{
+  const s = document.getElementById('support');
+  if (s) s.innerHTML = `Having a problem? Email <a href="mailto:${RP.esc(RP.SUPPORT)}">${RP.esc(RP.SUPPORT)}</a>`;
+}

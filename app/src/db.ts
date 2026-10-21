@@ -75,6 +75,10 @@ CREATE TABLE IF NOT EXISTS grants (
 CREATE TABLE IF NOT EXISTS access_log (
   id TEXT PRIMARY KEY, org_id TEXT, user_id TEXT NOT NULL, action TEXT NOT NULL, detail TEXT, at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS org_activity (    -- every use of an org API key (sign-ins, actions, rejected keys)
+  id INTEGER PRIMARY KEY AUTOINCREMENT, org_id TEXT NOT NULL, action TEXT NOT NULL, ok INTEGER NOT NULL DEFAULT 1, ip TEXT, at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS org_activity_org ON org_activity(org_id, at);
 CREATE TABLE IF NOT EXISTS share_codes (
   code_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL
 );

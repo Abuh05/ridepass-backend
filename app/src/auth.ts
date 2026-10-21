@@ -22,9 +22,35 @@ export function requireOrg(req: Req, kinds: string[]): { id: string; name: strin
   const m = key.match(/^rp_([A-Za-z0-9]{8})_(.+)$/);
   if (!m) throw new HttpError(401, 'API key required');
   const org = one('SELECT * FROM orgs WHERE key_prefix = ?', m[1]);
-  if (!org || !checkSecret(m[2], org.api_key_hash as string)) throw new HttpError(401, 'invalid API key');
-  if (!kinds.includes(org.kind as string)) throw new HttpError(403, `this key is for a ${org.kind}`);
+  if (!org) throw new HttpError(401, 'invalid API key');
+  if (!checkSecret(m[2], org.api_key_hash as string)) { logOrgUse(req, org.id as string, 'Wrong key entered', false); throw new HttpError(401, 'invalid API key'); }
+  if (!kinds.includes(org.kind as string)) { logOrgUse(req, org.id as string, 'Used the key in the wrong app', false); throw new HttpError(403, `this key is for a ${org.kind}`); }
+  logOrgUse(req, org.id as string);
   return { id: org.id as string, name: org.name as string, kind: org.kind as string };
+}
+
+const ORG_ACTIONS: Record<string, string> = {
+  'GET /api/org/me': 'Signed in',
+  'POST /api/agent/rider': 'Opened a rider',
+  'POST /api/agent/message': 'Sent a message for a rider',
+  'POST /api/agent/voice': 'Sent a voice note',
+  'POST /api/agent/verify-owner': 'Verified an owner',
+  'POST /api/org/grants': 'Asked a rider for access',
+  'GET /api/org/grants': 'Viewed access requests',
+  'GET /api/org/grants/:id/passport': 'Viewed a passport',
+  'POST /api/org/share-code': 'Opened a passport share code',
+  'GET /api/org/portfolio': 'Viewed the portfolio',
+};
+// The agent app polls these every few seconds; recording them would bury the real actions.
+const POLLED = new Set(['GET /api/agent/outbox', 'GET /api/agent/rider']);
+
+/** Records each use of an org key so the admin console can show who signed in and what they did. */
+function logOrgUse(req: Req, orgId: string, failure?: string, ok = true): void {
+  const route = `${req.method} ${(req.url ?? '').split('?')[0].replace(/\/grants\/[^/]+\/passport$/, '/grants/:id/passport')}`;
+  if (POLLED.has(route)) return;
+  const action = ok ? ORG_ACTIONS[route] ?? route : `${failure} (${ORG_ACTIONS[route] ?? route})`;
+  const ip = String(req.headers['x-forwarded-for'] ?? req.socket?.remoteAddress ?? '').split(',')[0].trim().slice(0, 64);
+  run('INSERT INTO org_activity (org_id, action, ok, ip, at) VALUES (?,?,?,?,?)', orgId, action, ok ? 1 : 0, ip || null, nowIso());
 }
 
 export function newSession(kind: 'rider', userId: string, hours = 12): string {

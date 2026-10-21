@@ -26,7 +26,7 @@ Track B (Innovation & Enterprise) · Problem Statement 2: Voice-First Access
 
 | Criterion | Our strongest proof |
 |---|---|
-| Working artefact & technical rigour | Real WhatsApp voice flow in 5 languages. 48 automated tests. Hash-chained ledger and Ed25519-signed passports with a public verifier. Persistent job queue with retries. Zero-dependency deployment. |
+| Working artefact & technical rigour | Real WhatsApp voice flow in 5 languages. 51 automated tests. Hash-chained ledger and Ed25519-signed passports with a public verifier. Persistent job queue with retries. Zero-dependency deployment. |
 | N-ATLAS integration | Official ASR for **all four** languages. N-ATLaS for structured extraction (schema-constrained) **and** as a money coach in the rider's language. Guard-rails measured, not hidden (`natlas` vs `natlas_guarded` vs `fallback` share reported). |
 | Real-world validation | 30 riders, 300+ voice interactions, first-pass accuracy by language, WER on native-speaker-labelled clips, owner confirmation rate, satisfaction score, lender feedback |
 | Impact potential | 93% of Nigerian workers are informal. Riders are locked out of fair finance. ELRA/NATOMORAS launched a leasing scheme in April 2026 that needs exactly this risk data. |

@@ -4,13 +4,16 @@ WhatsApp is pending Meta business verification, so judges use the web app and th
 which run the same conversation engine and the same N-ATLAS models. The two judges' API keys are
 provided privately in the submission form (one field-agent key, one lessor key).
 
+**Any problem while testing** (a key that doesn't work, a voice note with no reply, a page that won't load):
+email **abuhsolo05@gmail.com** and we will respond as quickly as possible.
+
 **Live voice hours: 08:00–20:00 WAT, every day of the evaluation period.** The N-ATLAS models run on a
 rented GPU that we switch off overnight to control cost. Everything else (website, dashboards, typed
 messages, passports, verifier) is available 24/7.
 
 - Outside those hours a voice note is **not lost**: RidePass replies that it is safe in the queue and answers
   it automatically when the GPU starts the next morning (notes are kept for up to 24 hours).
-- To test voice at another time, email **creditpassport@gmail.com** and we will start the GPU (ready in a
+- To test voice at another time, email **abuhsolo05@gmail.com** and we will start the GPU (ready in a
   few minutes).
 - `https://credit-passport-tau.vercel.app/health` always shows `"mode":"natlas"` (production never uses mock models).
 
@@ -33,5 +36,5 @@ with your test rider's phone (Daily repayment tracking); approve it in the rider
 ## 3. Integrity and transparency
 - Verify any signed passport at https://credit-passport-tau.vercel.app/verify (public key: `/.well-known/ridepass-key.pem`).
 - Daily ledger anchors (Merkle roots): https://credit-passport-tau.vercel.app/api/anchors
-- Source code: https://github.com/Abuh05/ridepass-backend (48 automated tests: `cd app && npm test`).
+- Source code: https://github.com/Abuh05/ridepass-backend (51 automated tests: `cd app && npm test`).
 - Privacy notice: https://credit-passport-tau.vercel.app/privacy
