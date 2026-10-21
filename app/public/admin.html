@@ -112,7 +112,7 @@ async function signin() {
   } catch (e) { $('kerr').textContent = e.status === 401 ? 'That admin key is not valid.' : e.message; RP.store.set('rp_admin', null); }
 }
 async function load() {
-  const [m, orgs, act] = await Promise.all([RP.api('/api/admin/metrics', { headers: H() }), RP.api('/api/admin/orgs', { headers: H() }), RP.api('/api/admin/activity', { headers: H() })]);
+  const [m, orgs, act] = await Promise.all([RP.api('/api/admin/metrics', { headers: H() }), RP.api('/api/admin/orgs', { headers: H() }), RP.api('/api/admin/activity', { headers: H() }).catch(() => [])]);
   const att = Object.fromEntries((m.attestations || []).map((a) => [a.status, a.n]));
   $('kpis').innerHTML =
     kpi('Active riders · 30 days', `${m.active_users_30d}<span class="muted" style="font-size:15px;font-weight:600"> / ${m.user_cap}</span>`, m.cap_warning ? 'Near the N-ATLAS licence cap' : `${m.riders} consented in total`, m.cap_warning) +
